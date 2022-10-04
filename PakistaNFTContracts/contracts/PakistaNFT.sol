@@ -17,7 +17,11 @@ contract PakistaNFT is ERC1155, Ownable {
 
     uint256 public constant numberOfTokenTypes = 6;
 
-    uint256[] public MINT_RATE = [
+    string[] currency = ["ETHER", "USDC"];
+
+    mapping(string => uint256[]) MINT_RATE_MAPPING;
+
+    uint256[] public ETHER_MINT_RATE = [
         1 ether,
         1 ether,
         1 ether,
@@ -26,22 +30,39 @@ contract PakistaNFT is ERC1155, Ownable {
         1 ether
     ];
 
+    uint256[] public USDC_MINT_RATE = [
+        1 ether,
+        2 ether,
+        3 ether,
+        4 ether,
+        5 ether,
+        6 ether
+    ];
+
     constructor()
         ERC1155(
             "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/{id}.json"
         )
     {
         treasury = 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db;
+
+        MINT_RATE_MAPPING["ETHER"] = ETHER_MINT_RATE;
+        MINT_RATE_MAPPING["USDC"] = USDC_MINT_RATE;
     }
 
     function mint(
-        address to,
-        uint256 id,
-        uint256 amount
+        address _to,
+        uint256 _id,
+        uint256 _amount,
+        uint256 _currency
     ) external payable {
-        require(id < numberOfTokenTypes, "Token id does not exist");
-        require(msg.value >= (amount * MINT_RATE[id]), "Not enough ether sent");
-        _mint(to, id, amount, "");
+        require(_id < numberOfTokenTypes, "Token id does not exist");
+        require(
+            msg.value >=
+                (_amount * MINT_RATE_MAPPING[currency[_currency]][_id]),
+            "Not enough Ether sent"
+        );
+        _mint(_to, _id, _amount, "");
     }
 
     function withdrawEther() external onlyOwner {
