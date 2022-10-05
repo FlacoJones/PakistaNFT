@@ -1,0 +1,23 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "donjayamanne.githistory",
+    "formulahendry.auto-close-tag",
+    "CoenraadS.bracket-pair-colorizer-2",
+    "formulahendry.auto-rename-tag",
+    "2gua.rainbow-brackets",
+    "aaron-bond.better-comments",
+    "eamodio.gitlens",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-preview-github-styles",
+    "quicktype.quicktype",
+    "christian-kohler.path-intellisense",
+    "foxundermoon.shell-format",
+    "redhat.vscode-yaml",
+    "gamunu.vscode-yarn",
+    "naumovs.color-highlight",
+    "JuanBlanco.solidity",
+    "tintinweb.solidity-visual-auditor",
+    "cschleiden.vscode-github-actions"
+  ]
+}

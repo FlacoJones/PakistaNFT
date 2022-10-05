@@ -1,0 +1,39 @@
+{
+  "editor.tabSize": 2,
+  "yaml.format.printWidth": 80,
+  "yaml.format.bracketSpacing": true,
+  "yaml.format.enable": true,
+  "yaml.format.singleQuote": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[solidity]": {
+    "editor.defaultFormatter": "JuanBlanco.solidity",
+    "editor.tabSize": 4,
+    "editor.autoIndent": "advanced",
+    "editor.autoClosingBrackets": "always",
+    "editor.autoClosingQuotes": "always",
+  },
+  "solidity.linter": "solhint",
+  "solidity.defaultCompiler": "remote",
+  "solidity.compileUsingLocalVersion": "latest",
+  "solidity.remappingsUnix": [
+    "@openzeppelin/=save-pakistan-contracts/node_modules/@openzeppelin/",
+    "@eth-optimism/=save-pakistan-contracts/node_modules/@eth-optimism/",
+    "erc721a-upgradeable/=save-pakistan-contracts/node_modules/erc721a-upgradeable/",
+    "hardhat/=save-pakistan-contracts/node_modules/hardhat/",
+    "erc1155diamondstorage/=save-pakistan-contracts/node_modules/erc1155diamondstorage/"
+  ],
+  "solidity.remappings": [
+    "@openzeppelin/=save-pakistan-contracts/node_modules/@openzeppelin/",
+    "@eth-optimism/=save-pakistan-contracts/node_modules/@eth-optimism/",
+    "erc721a-upgradeable/=save-pakistan-contracts/node_modules/erc721a-upgradeable/",
+    "hardhat/=save-pakistan-contracts/node_modules/hardhat/",
+    "erc1155diamondstorage/=save-pakistan-contracts/node_modules/erc1155diamondstorage/"
+  ],
+}
