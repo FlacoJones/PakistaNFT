@@ -283,9 +283,34 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function uri(uint256 _tokenId) public view override returns (string memory) {
         TokenVariant tokenVariant = _tokenIdToTokenVariant[_tokenId];
-        string memory baseURI = "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe";
+        string memory baseURI = "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/";
+        string memory tokenURI;
 
-        return string(abi.encodePacked(baseURI, uint256(tokenVariant)));
+        if (tokenVariant == TokenVariant.RationBag) {
+            tokenURI = "0";
+        }
+
+        if (tokenVariant == TokenVariant.TemporaryShelter) {
+            tokenURI = "1";
+        }
+
+        if (tokenVariant == TokenVariant.HygieneKit) {
+            tokenURI = "2";
+        }
+
+        if (tokenVariant == TokenVariant.PortableToilets) {
+            tokenURI = "3";
+        }
+
+        if (tokenVariant == TokenVariant.Water) {
+            tokenURI = "4";
+        }
+
+        if (tokenVariant == TokenVariant.WaterWheel) {
+            tokenURI = "5";
+        }
+
+        return string(abi.encodePacked(baseURI, tokenURI, ".json"));
     }
 
     /**

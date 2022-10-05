@@ -4,14 +4,14 @@ import { BigNumber, utils } from "ethers";
 import { ethers } from "hardhat";
 import { SavePakistan } from "../typechain-types";
 
-enum TokenVariant {
-  RationBag = "0",
-  TemporaryShelter = "1",
-  HygieneKit = "2",
-  PortableToilets = "3",
-  Water = "4",
-  WaterWheel = "5",
-}
+const TokenVariant = {
+  RationBag: BigNumber.from("0"),
+  TemporaryShelter: BigNumber.from("1"),
+  HygieneKit: BigNumber.from("2"),
+  PortableToilets: BigNumber.from("3"),
+  Water: BigNumber.from("4"),
+  WaterWheel: BigNumber.from("5"),
+};
 
 describe("SavePakistan", () => {
   const provider = ethers.getDefaultProvider();
@@ -32,27 +32,36 @@ describe("SavePakistan", () => {
     console.log("savePakistan contract initial etherBalance", utils.formatEther(etherBalance));
   });
 
-  it("should mint when caller is user1", async () => {
+  it("should mint when quantity is 1 and sends correct amount of ether", async () => {
     const contract = savePakistan.connect(user1);
 
-    const etherMintRate = await contract.getTokenVariantEtherMintRate(
-      BigNumber.from(TokenVariant.RationBag)
-    );
-    console.log("etherMintRate", utils.formatEther(etherMintRate));
+    const etherMintRate = await contract.getTokenVariantEtherMintRate(BigNumber.from("0"));
+    const quantity = BigNumber.from("1");
+    const msgValue = etherMintRate.mul(quantity);
 
-    const tx = await contract.mintByPayingEth(
-      BigNumber.from(TokenVariant.RationBag),
-      BigNumber.from("1"),
-      {
-        value: etherMintRate,
-      }
-    );
+    const tx = await contract.mintByPayingEth(TokenVariant.PortableToilets, quantity, {
+      value: msgValue,
+    });
     expect(tx.value).to.be.eq(etherMintRate);
     await tx.wait();
+  });
 
-    const etherBalance = await provider.getBalance(savePakistan.address);
-    console.log("etherBalance", utils.formatEther(etherBalance));
+  it("should mint when quantity is 5 and sends correct amount of ether", async () => {
+    const contract = savePakistan.connect(user1);
 
-    expect(etherBalance).to.be.eq(utils.parseEther("1"));
+    const etherMintRate = await contract.getTokenVariantEtherMintRate(BigNumber.from("4"));
+    const quantity = BigNumber.from("5");
+    const msgValue = etherMintRate.mul(quantity);
+
+    const tx = await contract.mintByPayingEth(TokenVariant.Water, quantity, {
+      value: msgValue,
+    });
+    expect(tx.value).to.be.eq(msgValue);
+    await tx.wait();
+  });
+
+  it("should return token URIs for specified tokens", async () => {
+    const tokenURIs = await Promise.all([savePakistan.uri("1"), savePakistan.uri("2")]);
+    console.log("tokenURIs", tokenURIs);
   });
 });
