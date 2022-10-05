@@ -63,15 +63,16 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     mapping(uint256 => TokenVariant) private _tokenIdToTokenVariant;
 
     // TODO: Verify with Andrew O'Brien regarding ether mint rates as they change overtime
+    // TODO: Better approach to putting up sale price in Ether
     /// ? how do we ensure the amount of ether value matches the $ value?
     /// @notice The minting rates for native ether
     uint256[6] public ETHER_MINT_RATE = [
-        1 ether, // Ration Bag
-        1 ether, // Temporary Shelter
-        1 ether, // Hygiene Kit
-        1 ether, // Portable Toilets
-        1 ether, // Clean and Safe Water
-        1 ether // H2O Wheel
+        0.30 ether, // Ration Bag // ! this is a placeholder value, to be replaced
+        0.199 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
+        0.10 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
+        0.65 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
+        0.00035 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
+        0.25 ether // H2O Wheel // ! this is a placeholder value, to be replaced
     ];
 
     /// @notice The minting rates for USDC token
@@ -160,10 +161,18 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * Emits {MintByPayingEth} event.
      */
     function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity) external payable nonReentrant {
-        // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
+        require(
+            _quantity < getTokenVariantRemainingSupply(_tokenVariant),
+            "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
+        );
+        require(
+            _quantity < getTokenVariantMaxSupply(_tokenVariant),
+            "SavePakistan: The requested quantity to purchase is beyond the max supply."
+        );
 
         uint256 rate = getTokenVariantEtherMintRate(_tokenVariant);
-        require(msg.value >= (_quantity * rate), "SavePakistan: Not enough Ether sent.");
+        uint256 amount = _quantity * rate;
+        require(msg.value >= amount, "SavePakistan: Not enough Ether sent.");
 
         // send ether to treasury
         (bool sent, bytes memory data) = payable(address(this)).call{value: msg.value}("");
@@ -183,29 +192,32 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /**
      * @notice Mints a token by purchasing using ERC20 token.
      * @param _tokenVariant Identifies the type of token to mint.
-     * @param _quantity The quantity of tokens to be minted.
-     * @param _amount <to be defined>
      * @param _tokenAddr <to be defined>
+     * @param _quantity The quantity of tokens to be minted.
      *
      * Emits {MintByPayingToken} event.
      */
     function mintByPayingToken(
         TokenVariant _tokenVariant,
-        uint256 _quantity,
-        uint256 _amount,
-        address _tokenAddr
+        address _tokenAddr,
+        uint256 _quantity
     ) external nonReentrant {
-        // TODO: Add logic to send correct amount of tokens depending on intended token type purchase
-        // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
-
-        bool tokenSupported = _tokenAddrToSupported[_tokenAddr];
-        require(tokenSupported, "SavePakistan: This token is not supported.");
+        require(_tokenAddrToSupported[_tokenAddr], "SavePakistan: This token is not supported.");
+        require(
+            _quantity < getTokenVariantRemainingSupply(_tokenVariant),
+            "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
+        );
+        require(
+            _quantity < getTokenVariantMaxSupply(_tokenVariant),
+            "SavePakistan: The requested quantity to purchase is beyond the max supply."
+        );
 
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
         uint256 rate = rates[uint256(_tokenVariant)];
-        require(_amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
+        uint256 amount = _quantity * rate;
+        require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
 
-        IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
+        IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), amount);
 
         _tokenCounter.increment();
         uint256 tokenId = _tokenCounter.current();
@@ -215,7 +227,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
         _mint(msg.sender, tokenId, _quantity, "");
 
-        emit MintByPayingToken(_tokenVariant, msg.sender, _quantity, _amount, _tokenAddr, tokenId);
+        emit MintByPayingToken(_tokenVariant, msg.sender, _quantity, amount, _tokenAddr, tokenId);
     }
 
     /**
@@ -224,6 +236,14 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function getTokenVariantSupply(TokenVariant _tokenVariant) public view returns (uint256) {
         return _tokenVariantToMintCount[_tokenVariant];
+    }
+
+    /**
+     * @notice Gets the remaining supply for a token variant.
+     * @param _tokenVariant The token variant corresponds to a real world item.
+     */
+    function getTokenVariantRemainingSupply(TokenVariant _tokenVariant) public view returns (uint256) {
+        return getTokenVariantMaxSupply(_tokenVariant) - _tokenVariantToMintCount[_tokenVariant];
     }
 
     /**
