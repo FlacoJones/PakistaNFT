@@ -10,13 +10,11 @@ import "hardhat-abi-exporter";
 import "hardhat-docgen";
 import "dotenv/config";
 
-import "./tasks";
-
 const accounts: string[] = [`0x${process.env.PRIVATE_KEY}` || ""];
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.14",
+    version: "0.8.17",
     settings: {
       optimizer: {
         enabled: true,
