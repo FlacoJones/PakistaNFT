@@ -21,18 +21,19 @@
   },
   "solidity.linter": "solhint",
   "solidity.defaultCompiler": "remote",
+  "solidity.compileUsingLocalVersion": "latest",
   "solidity.remappingsUnix": [
-    "@openzeppelin/=PakistaNFTContracts/node_modules/@openzeppelin/",
-    "@eth-optimism/=PakistaNFTContracts/node_modules/@eth-optimism/",
-    "erc721a-upgradeable/=PakistaNFTContracts/node_modules/erc721a-upgradeable/",
-    "hardhat/=PakistaNFTContracts/node_modules/hardhat/",
-    "erc1155diamondstorage/=PakistaNFTContracts/node_modules/erc1155diamondstorage/"
+    "@openzeppelin/=save-pakistan-contracts/node_modules/@openzeppelin/",
+    "@eth-optimism/=save-pakistan-contracts/node_modules/@eth-optimism/",
+    "erc721a-upgradeable/=save-pakistan-contracts/node_modules/erc721a-upgradeable/",
+    "hardhat/=save-pakistan-contracts/node_modules/hardhat/",
+    "erc1155diamondstorage/=save-pakistan-contracts/node_modules/erc1155diamondstorage/"
   ],
   "solidity.remappings": [
-    "@openzeppelin/=PakistaNFTContracts/node_modules/@openzeppelin/",
-    "@eth-optimism/=PakistaNFTContracts/node_modules/@eth-optimism/",
-    "erc721a-upgradeable/=PakistaNFTContracts/node_modules/erc721a-upgradeable/",
-    "hardhat/=PakistaNFTContracts/node_modules/hardhat/",
-    "erc1155diamondstorage/=PakistaNFTContracts/node_modules/erc1155diamondstorage/"
+    "@openzeppelin/=save-pakistan-contracts/node_modules/@openzeppelin/",
+    "@eth-optimism/=save-pakistan-contracts/node_modules/@eth-optimism/",
+    "erc721a-upgradeable/=save-pakistan-contracts/node_modules/erc721a-upgradeable/",
+    "hardhat/=save-pakistan-contracts/node_modules/hardhat/",
+    "erc1155diamondstorage/=save-pakistan-contracts/node_modules/erc1155diamondstorage/"
   ],
 }
