@@ -1,128 +1,303 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ERC1155, IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {AccessControl, IAccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
-contract SavePakistan is ERC1155, Ownable {
-    address public immutable treasury;
-    address public immutable usdcAddress;
-
+/// @title SavePakistan - The very first NFT collection that binds to real world < ... >
+/// @author Andrew O'Brien, Carlo Miguel Dy
+/// @notice <description for Save Pakistan NFT>
+/// @dev <any relevant developer explainiation>
+contract SavePakistan is ERC1155, AccessControl {
     using SafeERC20 for IERC20;
+    using Counters for Counters.Counter;
 
-    uint256 public constant RATION = 0;
-    uint256 public constant MEAL = 1;
-    uint256 public constant TENT = 2;
-    uint256 public constant HYGIENE_KIT = 3;
-    uint256 public constant WATER = 4;
-    uint256 public constant WATER_WHEEL = 5;
+    enum TokenVariant {
+        RationBag,
+        TemporaryShelter,
+        HygieneKit,
+        PortableToilets,
+        Water,
+        WaterWheel
+    }
 
-    uint256 public constant numberOfTokenTypes = 6;
+    /// @notice Keeps track of tokens corresponding to a tokenId
+    Counters.Counter private _tokenCounter;
 
-    string[] currency = ["ETHER", "USDC"];
-    address[] currencyAddress = [
-        address(0),
-        0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db
+    /// @notice The treasury address for SavePakistan to receive all payments
+    address public constant TREASURY_ADDR = 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db; // TODO: Replace with real treasury address from the team
+
+    /// @notice The USDC token address
+    /// @dev See https://optimistic.etherscan.io/token/0x7f5c764cbc14f9669b88837ca1490cca17c31607
+    address public constant USDC_ADDR = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
+
+    /// @notice The USDT token address
+    /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
+    address public constant USDT_ADDR = 0x94b008aA00579c1307B0EF2c499aD98a8ce58e58;
+
+    /// @notice Interface for USDC
+    IERC20 private usdc = IERC20(USDC_ADDR);
+
+    /// @notice Interface for USDT
+    IERC20 private usdt = IERC20(USDT_ADDR);
+
+    /// @notice The mapping that holds the supported tokens that this contract will receive
+    mapping(address => bool) private _tokenAddrToSupported;
+
+    /// @notice The mapping that binds an identifier to a minting rate
+    mapping(address => uint256[]) private _tokenAddrToRates;
+
+    /// @notice Mapping that holds the max supply allocation for each token variant
+    mapping(TokenVariant => uint256) private _tokenVariantToMaxSupply;
+
+    /// @notice Mapping that holds the minting count for each token variant
+    mapping(TokenVariant => uint256) private _tokenVariantToMintCount;
+
+    // TODO: Verify with Andrew O'Brien regarding ether mint rates as they change overtime
+    /// ? how do we ensure the amount of ether value matches the $ value?
+    /// @notice The minting rates for native ether
+    uint256[6] public ETHER_MINT_RATE = [
+        1 ether, // Ration Bag
+        1 ether, // Temporary Shelter
+        1 ether, // Hygiene Kit
+        1 ether, // Portable Toilets
+        1 ether, // Clean and Safe Water
+        1 ether // H2O Wheel
     ];
 
-    mapping(string => uint256[]) MINT_RATE_MAPPING;
-
-    uint256[] public ETHER_MINT_RATE = [
-        1 ether,
-        1 ether,
-        1 ether,
-        1 ether,
-        1 ether,
-        1 ether
+    /// @notice The minting rates for USDC token
+    uint256[6] public USDC_MINT_RATE = [
+        uint256(30 * 10**6), // Ration Bag
+        uint256(100 * 10**6), // Temporary Shelter
+        uint256(10 * 10**6), // Hygiene Kit
+        uint256(65 * 10**6), // Portable Toilets
+        uint256(0.0035 * 10**6), // Clean and Safe Water
+        uint256(25 * 10**6) // H2O Wheel
     ];
 
-    uint256[] public USDC_MINT_RATE = [
-        1 ether,
-        2 ether,
-        3 ether,
-        4 ether,
-        5 ether,
-        6 ether
+    /// @notice The minting rates for USDT token
+    uint256[6] public USDT_MINT_RATE = [
+        uint256(30 * 10**18), // Ration Bag
+        uint256(100 * 10**18), // Temporary Shelter
+        uint256(10 * 10**18), // Hygiene Kit
+        uint256(65 * 10**18), // Portable Toilets
+        uint256(0.0035 * 10**18), // Clean and Safe Water
+        uint256(25 * 10**18) // H2O Wheel
     ];
+
+    modifier onlyAdmin() {
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+            "SavePakistan: Only an Admin can call this function."
+        );
+        _;
+    }
 
     constructor()
-        ERC1155(
-            "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/{id}.json"
-        )
+        ERC1155("https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe")
     {
-        treasury = 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db;
-        usdcAddress = 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, TREASURY_ADDR);
 
-        MINT_RATE_MAPPING["ETHER"] = ETHER_MINT_RATE;
-        MINT_RATE_MAPPING["USDC"] = USDC_MINT_RATE;
+        // defining the supported tokens
+        _tokenAddrToSupported[USDC_ADDR] = true;
+        _tokenAddrToSupported[USDT_ADDR] = true;
+
+        // supported token rates
+        _tokenAddrToRates[USDC_ADDR] = USDC_MINT_RATE;
+        _tokenAddrToRates[USDT_ADDR] = USDT_MINT_RATE;
+
+        // defining the max supply for each token variants
+        _tokenVariantToMaxSupply[TokenVariant.RationBag] = uint256(5_000);
+        _tokenVariantToMaxSupply[TokenVariant.TemporaryShelter] = uint256(1_000);
+        _tokenVariantToMaxSupply[TokenVariant.HygieneKit] = uint256(5_000);
+        _tokenVariantToMaxSupply[TokenVariant.PortableToilets] = uint256(1_000);
+        _tokenVariantToMaxSupply[TokenVariant.Water] = uint256(5_000_000);
+        _tokenVariantToMaxSupply[TokenVariant.WaterWheel] = uint256(5_000);
     }
 
-    function etherMint(uint256 _id, uint256 _amount) external payable {
-        require(_id < numberOfTokenTypes, "Token id does not exist");
-        require(
-            msg.value >= (_amount * ETHER_MINT_RATE[_id]),
-            "Not enough Ether sent"
-        );
+    /// @notice Function to receive Ether when `msg.data` must be empty
+    receive() external payable {}
 
-        _mint(msg.sender, _id, _amount, "");
-    }
+    /// @notice Fallback function is called when `msg.data` is not empty
+    fallback() external payable {}
 
-    function erc20Mint(
-        uint256 _id,
-        uint256 _volume,
-        uint256 _currency
-    ) external {
-        require(
-            _volume >= MINT_RATE_MAPPING[currency[_currency]][_id],
-            "Not enough volume sent for this token type"
-        );
-        IERC20(currencyAddress[_currency]).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _volume
-        );
-    }
-
-    function withdrawEther() external onlyOwner {
-        payable(treasury).transfer(address(this).balance);
-    }
-
-    // should make this generic across all ERC20 in the currency array?
-    function withdrawUSDC() external onlyOwner {
-        IERC20 token = IERC20(usdcAddress);
-        token.safeTransfer(treasury, getERC20Balance(usdcAddress));
+    /**
+     * @notice Withdraws all ether balance to the designated treasury address.
+     */
+    function withdrawEther() external onlyAdmin {
+        (bool sent, bytes memory data) = payable(address(TREASURY_ADDR)).call{
+            value: address(this).balance
+        }("");
+        require(sent, "SavePakistan: Failed to send Ether to treasury.");
     }
 
     /**
-     * @dev Returns the ERC20 balance for this bounty address
-     * @param _tokenAddress The ERC20 token address
-     * @return balance The ERC20 balance for this bounty address
+     * @notice Withdraws all tokens to treasury.
      */
-    function getERC20Balance(address _tokenAddress)
-        public
-        view
-        returns (uint256 balance)
-    {
-        IERC20 token = IERC20(_tokenAddress);
-        return token.balanceOf(address(this));
+    function withdrawTokens() external onlyAdmin {
+        usdc.safeTransfer(TREASURY_ADDR, usdc.balanceOf(address(this)));
+        usdt.safeTransfer(TREASURY_ADDR, usdt.balanceOf(address(this)));
     }
 
-    function uri(uint256 _tokenid)
+    /**
+     * @notice Mints a token by purchasing using ether.
+     * @param _tokenVariant Identifies the type of token to mint.
+     * @param _quantity The quantity of tokens to be minted.
+     */
+    function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity) external payable {
+        // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
+
+        uint256 rate = getTokenVariantEtherMintRate(_tokenVariant);
+        require(msg.value >= (_quantity * rate), "SavePakistan: Not enough Ether sent.");
+
+        // send ether to treasury
+        (bool sent, bytes memory data) = payable(address(this)).call{value: msg.value}("");
+        require(sent, "SavePakistan: Failed to send Ether.");
+
+        _tokenCounter.increment();
+        uint256 tokenId = _tokenCounter.current();
+        _tokenVariantToMintCount[_tokenVariant] += _quantity;
+
+        _mint(msg.sender, tokenId, _quantity, "");
+    }
+
+    /**
+     * @notice Mints a token by purchasing using ERC20 token.
+     * @param _tokenVariant Identifies the type of token to mint.
+     * @param _quantity The quantity of tokens to be minted.
+     * @param _amount <to be defined>
+     * @param _tokenAddr <to be defined>
+     */
+    function mintByPayingToken(
+        TokenVariant _tokenVariant,
+        uint256 _quantity,
+        uint256 _amount,
+        address _tokenAddr
+    ) external {
+        // TODO: Add logic to send correct amount of tokens depending on intended token type purchase
+        // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
+
+        bool tokenSupported = _tokenAddrToSupported[_tokenAddr];
+        require(tokenSupported, "SavePakistan: This token is not supported.");
+
+        uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
+        uint256 rate = rates[uint256(_tokenVariant)];
+
+        require(_amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
+
+        IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
+
+        _tokenCounter.increment();
+        uint256 tokenId = _tokenCounter.current();
+        _tokenVariantToMintCount[_tokenVariant] += _quantity;
+
+        _mint(msg.sender, tokenId, _quantity, "");
+    }
+
+    /**
+     * @notice Gets the supply minted for a token variant.
+     * @param _tokenVariant The token variant corresponds to a real world item.
+     */
+    function getTokenVariantSupply(TokenVariant _tokenVariant) public view returns (uint256) {
+        return _tokenVariantToMintCount[_tokenVariant];
+    }
+
+    /**
+     * @notice Gets the max supply for a token variant.
+     * @param _tokenVariant The token variant corresponds to a real world item.
+     */
+    function getTokenVariantMaxSupply(TokenVariant _tokenVariant) public view returns (uint256) {
+        return _tokenVariantToMaxSupply[_tokenVariant];
+    }
+
+    /**
+     * @notice Gets the mint rate for a token variant in Ether.
+     * @param _tokenVariant The token variant corresponds to a real world item.
+     */
+    function getTokenVariantEtherMintRate(TokenVariant _tokenVariant)
         public
-        pure
-        override
-        returns (string memory)
+        view
+        returns (uint256)
+    {
+        return ETHER_MINT_RATE[uint256(_tokenVariant)];
+    }
+
+    /**
+     * @notice Gets the mint rate for a token variant in Ether.
+     * @param _tokenVariant The token variant corresponds to a real world item.
+     * @param _tokenAddr A supported token to receive payment in contract.
+     */
+    function getTokenVariantMintRate(TokenVariant _tokenVariant, address _tokenAddr)
+        public
+        view
+        returns (uint256)
+    {
+        uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
+        return rates[uint256(_tokenVariant)];
+    }
+
+    /**
+     * @notice Gets the mint rate for a supported token address.
+     * @param _tokenAddr A supported token to receive payment in contract.
+     */
+    function getTokenAddrMintRate(address _tokenAddr) public view returns (uint256[] memory) {
+        return _tokenAddrToRates[_tokenAddr];
+    }
+
+    /**
+     * @notice Checks if the given token address is supported.
+     * @param _tokenAddr An arbitrary token address.
+     */
+    function getTokenAddrSupported(address _tokenAddr) public view returns (bool) {
+        return _tokenAddrToSupported[_tokenAddr];
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AccessControl, ERC1155)
+        returns (bool)
     {
         return
-            string(
-                abi.encodePacked(
-                    "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/",
-                    Strings.toString(_tokenid),
-                    ".json"
-                )
-            );
+            interfaceId == type(IAccessControl).interfaceId ||
+            interfaceId == type(IERC1155).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev See {ERC1155-uri}.
+     */
+    function uri(uint256 _tokenId) public view override returns (string memory) {
+        // TODO: Come up with an string interpolation implementation
+        // TODO: where the tokenId will be identified as a type of token
+        // TODO: then it should render the correct metadata URI
+
+        return super.uri(_tokenId);
+    }
+
+    /**
+     * @notice This override disables transferring of tokens to any arbitrary address.
+     * @dev See {ERC1155-_beforeTokenTransfer}.
+     */
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal virtual override {
+        if (to != address(0) || from != address(0)) {
+            require(false, "SavePakistan: Not allowed to transfer a token.");
+        }
     }
 }
