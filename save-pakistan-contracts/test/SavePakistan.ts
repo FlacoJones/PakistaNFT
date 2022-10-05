@@ -13,6 +13,10 @@ const TokenVariant = {
   WaterWheel: BigNumber.from("5"),
 };
 
+// TODO: Use mocking to replace the constant values on real tokens for USDT & USDC and return mock ERC20 token in test suite
+// TODO: Write more unit tests to test out the validation requirements on minting
+// TODO: Write unit test to test out withdrawing Ether and ERC20 tokens to treasury
+// TODO: Write unit test to assert if the USDC & USDT mint rates are in correct value in USD
 describe("SavePakistan", () => {
   const provider = ethers.getDefaultProvider();
   let savePakistan: SavePakistan;
