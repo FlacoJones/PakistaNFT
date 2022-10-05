@@ -1,0 +1,91 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - opened
+      - reopened
+    branches-ignore:
+      - ci/*
+      - devops/*
+      - automation/*
+
+jobs:
+  run-lint:
+    if: ! github.event.pull_request.draft
+    name: 'Run Lints'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Parse Env Vars
+        run: echo "${{ secrets.BASE64_ENV_VARS }}" | base64 --decode > ./.env
+
+      - name: Install Dependencies
+        run: yarn install
+
+      # run eslint
+      - name: Execute linter
+        run: yarn lint
+
+      # job success
+      - run: echo "✅ This job's status is ${{ job.status }}."
+
+  run-hardhat-coverage:
+    if: ! github.event.pull_request.draft
+    name: 'Run Test Coverage'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Parse Env Vars
+        run: echo "${{ secrets.BASE64_ENV_VARS }}" | base64 --decode > ./.env
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Compile Contracts
+        run: yarn hardhat compile
+
+      - name: Run Coverage
+        run: yarn coverage
+
+      # job success
+      - run: echo "✅ This job's status is ${{ job.status }}."
+
+  # ref https://github.com/crytic/slither
+  run-slither:
+    if: ! github.event.pull_request.draft
+    name: 'Run Slither Audit'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Parse Env Vars
+        run: echo "${{ secrets.BASE64_ENV_VARS }}" | base64 --decode > ./.env
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Hardhat Compile
+        run: yarn hardhat compile
+
+      - name: 'Setup Python'
+        uses: actions/setup-python@v1
+
+      - name: 'Setup Pip & Slither'
+        uses: BSFishy/pip-action@v1
+        with:
+          packages: |
+            slither-analyzer
+
+      - name: Run Slither
+        run: slither .
+
+      # job success
+      - run: echo "✅ This job's status is ${{ job.status }}."
