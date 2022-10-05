@@ -1,0 +1,38 @@
+{
+  "editor.tabSize": 2,
+  "yaml.format.printWidth": 80,
+  "yaml.format.bracketSpacing": true,
+  "yaml.format.enable": true,
+  "yaml.format.singleQuote": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[solidity]": {
+    "editor.defaultFormatter": "JuanBlanco.solidity",
+    "editor.tabSize": 4,
+    "editor.autoIndent": "advanced",
+    "editor.autoClosingBrackets": "always",
+    "editor.autoClosingQuotes": "always",
+  },
+  "solidity.linter": "solhint",
+  "solidity.defaultCompiler": "remote",
+  "solidity.remappingsUnix": [
+    "@openzeppelin/=PakistaNFTContracts/node_modules/@openzeppelin/",
+    "@eth-optimism/=PakistaNFTContracts/node_modules/@eth-optimism/",
+    "erc721a-upgradeable/=PakistaNFTContracts/node_modules/erc721a-upgradeable/",
+    "hardhat/=PakistaNFTContracts/node_modules/hardhat/",
+    "erc1155diamondstorage/=PakistaNFTContracts/node_modules/erc1155diamondstorage/"
+  ],
+  "solidity.remappings": [
+    "@openzeppelin/=PakistaNFTContracts/node_modules/@openzeppelin/",
+    "@eth-optimism/=PakistaNFTContracts/node_modules/@eth-optimism/",
+    "erc721a-upgradeable/=PakistaNFTContracts/node_modules/erc721a-upgradeable/",
+    "hardhat/=PakistaNFTContracts/node_modules/hardhat/",
+    "erc1155diamondstorage/=PakistaNFTContracts/node_modules/erc1155diamondstorage/"
+  ],
+}
