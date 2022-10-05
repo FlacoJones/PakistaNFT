@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import {ERC1155, IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC1155URIStorage} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
 import {ERC1155Supply} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -15,7 +14,7 @@ import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 /// @author Andrew O'Brien, Carlo Miguel Dy
 /// @notice <description for Save Pakistan NFT>
 /// @dev <any relevant developer explainiation>
-contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessControl, ReentrancyGuard {
+contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
 
@@ -60,6 +59,9 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
     /// @notice Mapping that holds the minting count for each token variant
     mapping(TokenVariant => uint256) private _tokenVariantToMintCount;
 
+    /// @notice Mapping that holds the token variant of a tokenId
+    mapping(uint256 => TokenVariant) private _tokenIdToTokenVariant;
+
     // TODO: Verify with Andrew O'Brien regarding ether mint rates as they change overtime
     /// ? how do we ensure the amount of ether value matches the $ value?
     /// @notice The minting rates for native ether
@@ -92,17 +94,22 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
         uint256(25 * 10**18) // H2O Wheel
     ];
 
+    event MintByPayingEth(TokenVariant indexed tokenVariant, address indexed minter, uint256 quantity, uint256 tokenId);
+    event MintByPayingToken(
+        TokenVariant indexed tokenVariant,
+        address indexed minter,
+        uint256 quantity,
+        uint256 amount,
+        address tokenAddr,
+        uint256 tokenId
+    );
+
     modifier onlyAdmin() {
-        require(
-            hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "SavePakistan: Only an Admin can call this function."
-        );
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "SavePakistan: Only an Admin can call this function.");
         _;
     }
 
-    constructor()
-        ERC1155("https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe")
-    {
+    constructor() ERC1155("") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, TREASURY_ADDR);
 
@@ -133,9 +140,7 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
      * @notice Withdraws all ether balance to the designated treasury address.
      */
     function withdrawEther() external onlyAdmin {
-        (bool sent, bytes memory data) = payable(address(TREASURY_ADDR)).call{
-            value: address(this).balance
-        }("");
+        (bool sent, bytes memory data) = payable(address(TREASURY_ADDR)).call{value: address(this).balance}("");
         require(sent, "SavePakistan: Failed to send Ether to treasury.");
     }
 
@@ -151,12 +156,10 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
      * @notice Mints a token by purchasing using ether.
      * @param _tokenVariant Identifies the type of token to mint.
      * @param _quantity The quantity of tokens to be minted.
+     *
+     * Emits {MintByPayingEth} event.
      */
-    function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity)
-        external
-        payable
-        nonReentrant
-    {
+    function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity) external payable nonReentrant {
         // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
 
         uint256 rate = getTokenVariantEtherMintRate(_tokenVariant);
@@ -168,9 +171,13 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
 
         _tokenCounter.increment();
         uint256 tokenId = _tokenCounter.current();
+
         _tokenVariantToMintCount[_tokenVariant] += _quantity;
+        _tokenIdToTokenVariant[tokenId] = _tokenVariant;
 
         _mint(msg.sender, tokenId, _quantity, "");
+
+        emit MintByPayingEth(_tokenVariant, msg.sender, _quantity, tokenId);
     }
 
     /**
@@ -179,6 +186,8 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
      * @param _quantity The quantity of tokens to be minted.
      * @param _amount <to be defined>
      * @param _tokenAddr <to be defined>
+     *
+     * Emits {MintByPayingToken} event.
      */
     function mintByPayingToken(
         TokenVariant _tokenVariant,
@@ -194,16 +203,19 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
 
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
         uint256 rate = rates[uint256(_tokenVariant)];
-
         require(_amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
 
         IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
 
         _tokenCounter.increment();
         uint256 tokenId = _tokenCounter.current();
+
         _tokenVariantToMintCount[_tokenVariant] += _quantity;
+        _tokenIdToTokenVariant[tokenId] = _tokenVariant;
 
         _mint(msg.sender, tokenId, _quantity, "");
+
+        emit MintByPayingToken(_tokenVariant, msg.sender, _quantity, _amount, _tokenAddr, tokenId);
     }
 
     /**
@@ -226,11 +238,7 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
      * @notice Gets the mint rate for a token variant in Ether.
      * @param _tokenVariant The token variant corresponds to a real world item.
      */
-    function getTokenVariantEtherMintRate(TokenVariant _tokenVariant)
-        public
-        view
-        returns (uint256)
-    {
+    function getTokenVariantEtherMintRate(TokenVariant _tokenVariant) public view returns (uint256) {
         return ETHER_MINT_RATE[uint256(_tokenVariant)];
     }
 
@@ -239,11 +247,7 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
      * @param _tokenVariant The token variant corresponds to a real world item.
      * @param _tokenAddr A supported token to receive payment in contract.
      */
-    function getTokenVariantMintRate(TokenVariant _tokenVariant, address _tokenAddr)
-        public
-        view
-        returns (uint256)
-    {
+    function getTokenVariantMintRate(TokenVariant _tokenVariant, address _tokenAddr) public view returns (uint256) {
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
         return rates[uint256(_tokenVariant)];
     }
@@ -267,13 +271,7 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(AccessControl, ERC1155)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC1155) returns (bool) {
         return
             interfaceId == type(IAccessControl).interfaceId ||
             interfaceId == type(IERC1155).interfaceId ||
@@ -283,17 +281,11 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
     /**
      * @dev See {ERC1155-uri}.
      */
-    function uri(uint256 _tokenId)
-        public
-        view
-        override(ERC1155, ERC1155URIStorage)
-        returns (string memory)
-    {
-        // TODO: Come up with an string interpolation implementation
-        // TODO: where the tokenId will be identified as a type of token
-        // TODO: then it should render the correct metadata URI
+    function uri(uint256 _tokenId) public view override returns (string memory) {
+        TokenVariant tokenVariant = _tokenIdToTokenVariant[_tokenId];
+        string memory baseURI = "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe";
 
-        return super.uri(_tokenId);
+        return string(abi.encodePacked(baseURI, uint256(tokenVariant)));
     }
 
     /**
@@ -309,10 +301,7 @@ contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessContro
         bytes memory data
     ) internal virtual override(ERC1155, ERC1155Supply) {
         if (from != address(0) && to != address(0)) {
-            require(
-                false,
-                "SavePakistan: Not allowed to transfer a token from/to arbitrary address."
-            );
+            require(false, "SavePakistan: Not allowed to transfer a token from/to arbitrary address.");
         }
 
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
