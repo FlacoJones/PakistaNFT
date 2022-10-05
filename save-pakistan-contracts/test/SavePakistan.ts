@@ -2,8 +2,9 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, utils } from "ethers";
 import { ethers } from "hardhat";
-import { SavePakistan } from "../typechain-types";
+import { SavePakistan, TreasuryMock } from "../typechain-types";
 
+// This corresponds to actual values on Enum from `SavePakistan.sol`
 const TokenVariant = {
   RationBag: BigNumber.from("0"),
   TemporaryShelter: BigNumber.from("1"),
@@ -20,6 +21,7 @@ const TokenVariant = {
 describe("SavePakistan", () => {
   const provider = ethers.getDefaultProvider();
   let savePakistan: SavePakistan;
+  let treasuryMock: TreasuryMock;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -28,10 +30,17 @@ describe("SavePakistan", () => {
   before(async () => {
     [deployer, user1, user2, ...signers] = await ethers.getSigners();
 
+    // ERC1155
     const SavePakistan = await ethers.getContractFactory("SavePakistan");
     savePakistan = <SavePakistan>await SavePakistan.deploy();
     savePakistan.deployed();
 
+    // Treasury
+    const TreasuryMock = await ethers.getContractFactory("TreasuryMock");
+    treasuryMock = await TreasuryMock.deploy();
+    await treasuryMock.deployed();
+
+    // check initial Ether balance
     const etherBalance = await provider.getBalance(savePakistan.address);
     console.log("savePakistan contract initial etherBalance", utils.formatEther(etherBalance));
   });
