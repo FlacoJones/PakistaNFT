@@ -2,17 +2,20 @@
 pragma solidity 0.8.17;
 
 import {ERC1155, IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {AccessControl, IAccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ERC1155URIStorage} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
+import {ERC1155Supply} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {AccessControl, IAccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @title SavePakistan - The very first NFT collection that binds to real world < ... >
 /// @author Andrew O'Brien, Carlo Miguel Dy
 /// @notice <description for Save Pakistan NFT>
 /// @dev <any relevant developer explainiation>
-contract SavePakistan is ERC1155, AccessControl {
+contract SavePakistan is ERC1155, ERC1155URIStorage, ERC1155Supply, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
 
@@ -149,7 +152,11 @@ contract SavePakistan is ERC1155, AccessControl {
      * @param _tokenVariant Identifies the type of token to mint.
      * @param _quantity The quantity of tokens to be minted.
      */
-    function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity) external payable {
+    function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity)
+        external
+        payable
+        nonReentrant
+    {
         // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
 
         uint256 rate = getTokenVariantEtherMintRate(_tokenVariant);
@@ -178,7 +185,7 @@ contract SavePakistan is ERC1155, AccessControl {
         uint256 _quantity,
         uint256 _amount,
         address _tokenAddr
-    ) external {
+    ) external nonReentrant {
         // TODO: Add logic to send correct amount of tokens depending on intended token type purchase
         // TODO: Add validation logic where it can't mint more quantity than the max supply of a token variant
 
@@ -276,7 +283,12 @@ contract SavePakistan is ERC1155, AccessControl {
     /**
      * @dev See {ERC1155-uri}.
      */
-    function uri(uint256 _tokenId) public view override returns (string memory) {
+    function uri(uint256 _tokenId)
+        public
+        view
+        override(ERC1155, ERC1155URIStorage)
+        returns (string memory)
+    {
         // TODO: Come up with an string interpolation implementation
         // TODO: where the tokenId will be identified as a type of token
         // TODO: then it should render the correct metadata URI
@@ -295,9 +307,26 @@ contract SavePakistan is ERC1155, AccessControl {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override {
-        if (to != address(0) || from != address(0)) {
-            require(false, "SavePakistan: Not allowed to transfer a token.");
+    ) internal virtual override(ERC1155, ERC1155Supply) {
+        if (from != address(0) && to != address(0)) {
+            require(
+                false,
+                "SavePakistan: Not allowed to transfer a token from/to arbitrary address."
+            );
         }
+
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    }
+
+    /**
+     * @dev See {ERC1155-_burn}.
+     */
+    function _burn(
+        address from,
+        uint256 id,
+        uint256 amount
+    ) internal virtual override {
+        require(false, "SavePakistan: Not allowed to burn a token.");
+        super._burn(from, id, amount);
     }
 }
