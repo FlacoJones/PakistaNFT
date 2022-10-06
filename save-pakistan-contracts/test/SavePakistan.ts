@@ -33,7 +33,7 @@ describe("SavePakistan", () => {
     [deployer, user1, user2, ...signers] = await ethers.getSigners();
 
     const baseURI =
-      "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/";
+      "https://ipfs.io/ipfs/bafybeihrni33k36zw6v7hv2miggpaqdnkgwe7mac6ww6enju44wqxxiqkq/";
 
     // Mock Treasury
     const TreasuryMock = await ethers.getContractFactory("TreasuryMock");
