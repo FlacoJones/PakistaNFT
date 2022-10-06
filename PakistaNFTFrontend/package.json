@@ -17,6 +17,8 @@
   "dependencies": {
     "axios": "^0.27.2",
     "ethers": "^5.7.1",
+    "flowbite": "^1.5.3",
+    "flowbite-vue": "^0.0.6",
     "pinia": "^2.0.22",
     "vagmi": "^0.1.20",
     "vue": "^3.2.37",

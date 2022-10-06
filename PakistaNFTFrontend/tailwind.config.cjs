@@ -1,6 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx,vue}'],
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx,vue}',
+    'node_modules/flowbite-vue/**/*.{js,jsx,ts,tsx}',
+    'node_modules/flowbite/**/*.{js,jsx,ts,tsx}',
+  ],
   theme: {
     // fontFamily: {
     //   sans: ['Helvetica', 'Arial', 'sans-serif'],
@@ -16,5 +21,5 @@ module.exports = {
     //   },
     // },
   },
-  plugins: [],
+  plugins: [require('flowbite/plugin')],
 }
