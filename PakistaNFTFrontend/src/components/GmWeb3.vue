@@ -1,18 +1,46 @@
 <script setup lang="ts">
-import { useMint } from '@/composables/useMint'
-import { useAccount, useConnect } from 'vagmi'
+import { useEthMint } from '@/composables/useMint'
+import { useAccount } from 'vagmi'
+import { NFTVariant } from '@/types'
 
-const { connect, connectors } = useConnect()
+import ConnectWalletModal from './ConnectWalletModal.vue'
+import ConnectWalletButton from './ConnectWalletButton.vue'
+
+import { ref } from 'vue'
+
+/**
+ * vagmi
+ */
 const { address: account } = useAccount()
-const { mutate: mint } = useMint()
+const { mutate: ethMint } = useEthMint()
 
+/**
+ * connect wallet
+ */
+const isConnectWalletModalOpen = ref(false)
+const showConnectButtonModal = () => {
+  isConnectWalletModalOpen.value = true
+}
+const closeConnectButtonModal = () => {
+  isConnectWalletModalOpen.value = false
+}
+
+/**
+ * mint tests
+ */
 const handleMintButtonClick = () => {
-  mint({ account: account.value, tokenType: 1, amount: 1 })
+  ethMint({ nftVariant: NFTVariant.MEAL, amount: 2 })
 }
 </script>
 
 <template>
+  <!-- test vagmi account -->
   <p>gm {{ account ?? 'web3' }}</p>
-  <button class="bg-sky-300 p-2" @click="connect(connectors[0])">connect wallet</button>
-  <button class="bg-pink-300 py-2 px-6" @click="handleMintButtonClick()">mint</button>
+
+  <!-- connect wallet -->
+  <ConnectWalletButton @click="showConnectButtonModal" />
+  <ConnectWalletModal :is-open="isConnectWalletModalOpen" :on-close="closeConnectButtonModal" />
+
+  <!-- test mint button -->
+  <button class="bg-pink-300 py-2 px-6" @click="handleMintButtonClick">mint</button>
 </template>
