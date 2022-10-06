@@ -1,4 +1,4 @@
-import { usePakistaNftContract } from '@/composables/contracts'
+import { usePakistaNftContract } from '@/composables'
 import { constants } from 'ethers'
 import { useQuery } from 'vue-query'
 

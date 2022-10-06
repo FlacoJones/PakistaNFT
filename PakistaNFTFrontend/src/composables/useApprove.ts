@@ -18,9 +18,9 @@ export const useApprove = () => {
       if (!signer.value) {
         return
       }
-      const tokenContract = ERC20__factory.connect(token.address, signer.value)
+      const erc20 = ERC20__factory.connect(token.address, signer.value)
       const valueBN = utils.parseUnits(Number(value).toString(), token.decimals)
-      const tx = await tokenContract.approve(spender, valueBN, { gasLimit: 200_000 })
+      const tx = await erc20.approve(spender, valueBN, { gasLimit: 200_000 })
       return tx
     },
     {

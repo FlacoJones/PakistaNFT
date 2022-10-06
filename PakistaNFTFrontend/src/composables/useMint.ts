@@ -1,4 +1,4 @@
-import { usePakistaNftContract } from '@/composables/contracts'
+import { usePakistaNftContract } from '@/composables'
 import { BigNumber } from 'ethers'
 import { useMutation } from 'vue-query'
 import { NFTVariant, Token } from '@/types'
