@@ -10,10 +10,16 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
-/// @title SavePakistan - The very first NFT collection that binds to real world < ... >
+/// @title SavePakistan
+/// 
+/// is an initiative being co-ordinated by individuals 
+/// from Tayaba - who have already supported 30,000+ people since the crisis began.
+/// and Unchain Fund - who raised $10M for humanitarian aid in Ukraine earlier this year including 
+/// a $2.5M donation from Vitalik- to save thousands of lives in Pakistan and get critical support 
+/// to those who need it NOW!!
+/// 
 /// @author Andrew O'Brien, Carlo Miguel Dy
-/// @notice <description for Save Pakistan NFT>
-/// @dev <any relevant developer explainiation>
+/// @notice ERC1155 sale contract
 contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
