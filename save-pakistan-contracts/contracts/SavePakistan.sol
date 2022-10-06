@@ -10,10 +10,16 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
-/// @title SavePakistan - The very first NFT collection that binds to real world < ... >
+/// @title SavePakistan
+/// 
+/// is an initiative being co-ordinated by individuals 
+/// from Tayaba - who have already supported 30,000+ people since the crisis began.
+/// and Unchain Fund - who raised $10M for humanitarian aid in Ukraine earlier this year including 
+/// a $2.5M donation from Vitalik- to save thousands of lives in Pakistan and get critical support 
+/// to those who need it NOW!!
+/// 
 /// @author Andrew O'Brien, Carlo Miguel Dy
-/// @notice <description for Save Pakistan NFT>
-/// @dev <any relevant developer explainiation>
+/// @notice ERC1155 sale contract
 contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
@@ -27,25 +33,28 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         WaterWheel
     }
 
-    /// @notice Keeps track of tokens corresponding to a tokenId
-    Counters.Counter private _tokenCounter;
+    /// @notice The baseURI of the stored metadata
+    string public baseURI;
 
     /// @notice The treasury address for SavePakistan to receive all payments
-    address public constant TREASURY_ADDR = 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db; // TODO: Replace with real treasury address from the team
+    address public immutable treasuryAddr;
 
     /// @notice The USDC token address
     /// @dev See https://optimistic.etherscan.io/token/0x7f5c764cbc14f9669b88837ca1490cca17c31607
-    address public constant USDC_ADDR = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
+    address public immutable usdcAddr;
 
     /// @notice The USDT token address
     /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
-    address public constant USDT_ADDR = 0x94b008aA00579c1307B0EF2c499aD98a8ce58e58;
+    address public immutable usdtAddr;
+
+    /// @notice Keeps track of tokens corresponding to a tokenId
+    Counters.Counter private _tokenCounter;
 
     /// @notice Interface for USDC
-    IERC20 private usdc = IERC20(USDC_ADDR);
+    IERC20 private immutable usdc;
 
     /// @notice Interface for USDT
-    IERC20 private usdt = IERC20(USDT_ADDR);
+    IERC20 private immutable usdt;
 
     /// @notice The mapping that holds the supported tokens that this contract will receive
     mapping(address => bool) private _tokenAddrToSupported;
@@ -110,17 +119,30 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _;
     }
 
-    constructor() ERC1155("") {
+    constructor(
+        address _treasuryAddr,
+        address _usdcAddr,
+        address _usdtAddr,
+        string memory _baseURI
+    ) ERC1155("") {
+        treasuryAddr = _treasuryAddr;
+        usdcAddr = _usdcAddr;
+        usdtAddr = _usdtAddr;
+        baseURI = _baseURI;
+
+        usdc = IERC20(usdcAddr);
+        usdt = IERC20(usdtAddr);
+
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(DEFAULT_ADMIN_ROLE, TREASURY_ADDR);
+        _setupRole(DEFAULT_ADMIN_ROLE, treasuryAddr);
 
         // defining the supported tokens
-        _tokenAddrToSupported[USDC_ADDR] = true;
-        _tokenAddrToSupported[USDT_ADDR] = true;
+        _tokenAddrToSupported[usdcAddr] = true;
+        _tokenAddrToSupported[usdtAddr] = true;
 
         // supported token rates
-        _tokenAddrToRates[USDC_ADDR] = USDC_MINT_RATE;
-        _tokenAddrToRates[USDT_ADDR] = USDT_MINT_RATE;
+        _tokenAddrToRates[usdcAddr] = USDC_MINT_RATE;
+        _tokenAddrToRates[usdtAddr] = USDT_MINT_RATE;
 
         // defining the max supply for each token variants
         _tokenVariantToMaxSupply[TokenVariant.RationBag] = uint256(5_000);
@@ -131,17 +153,21 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _tokenVariantToMaxSupply[TokenVariant.WaterWheel] = uint256(5_000);
     }
 
-    /// @notice Function to receive Ether when `msg.data` must be empty
+    /**
+     * @notice Function to receive Ether when `msg.data` must be empty
+     */
     receive() external payable {}
 
-    /// @notice Fallback function is called when `msg.data` is not empty
+    /**
+     * @notice Fallback function is called when `msg.data` is not empty
+     */
     fallback() external payable {}
 
     /**
      * @notice Withdraws all ether balance to the designated treasury address.
      */
     function withdrawEther() external onlyAdmin {
-        (bool sent, bytes memory data) = payable(address(TREASURY_ADDR)).call{value: address(this).balance}("");
+        (bool sent, bytes memory data) = payable(address(treasuryAddr)).call{value: address(this).balance}("");
         require(sent, "SavePakistan: Failed to send Ether to treasury.");
     }
 
@@ -149,8 +175,8 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @notice Withdraws all tokens to treasury.
      */
     function withdrawTokens() external onlyAdmin {
-        usdc.safeTransfer(TREASURY_ADDR, usdc.balanceOf(address(this)));
-        usdt.safeTransfer(TREASURY_ADDR, usdt.balanceOf(address(this)));
+        usdc.safeTransfer(treasuryAddr, usdc.balanceOf(address(this)));
+        usdt.safeTransfer(treasuryAddr, usdt.balanceOf(address(this)));
     }
 
     /**
@@ -303,7 +329,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function uri(uint256 _tokenId) public view override returns (string memory) {
         TokenVariant tokenVariant = _tokenIdToTokenVariant[_tokenId];
-        string memory baseURI = "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/";
         string memory tokenURI = Strings.toString(uint256(tokenVariant));
         return string(abi.encodePacked(baseURI, tokenURI, ".json"));
     }
