@@ -6,6 +6,7 @@ import "@nomiclabs/hardhat-solhint";
 import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
+import "@nomiclabs/hardhat-waffle";
 import "hardhat-abi-exporter";
 import "hardhat-docgen";
 import "dotenv/config";
@@ -26,6 +27,18 @@ const config: HardhatUserConfig = {
         },
       },
     },
+    // compilers: [
+    //   {
+    //     version: "0.8.17",
+    //     settings: {
+    //       outputSelection: {
+    //         "*": {
+    //           "*": ["storageLayout"],
+    //         },
+    //       },
+    //     },
+    //   },
+    // ],
   },
   abiExporter: {
     path: "./data/abi",
