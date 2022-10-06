@@ -67,6 +67,7 @@
     "web3": "^1.7.5"
   },
   "dependencies": {
+    "@defi-wonderland/smock": "^2.3.0",
     "@openzeppelin/test-helpers": "^0.5.15",
     "@solidstate/contracts": "^0.0.41",
     "erc1155diamondstorage": "^1.1.2",
