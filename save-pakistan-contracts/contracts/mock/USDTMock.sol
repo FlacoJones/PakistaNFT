@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract TokenMock is ERC20 {
-    constructor() ERC20("Mock ERC20", "ME20") {
+contract USDTMock is ERC20 {
+    constructor() ERC20("Tether USD", "USDT") {
         _mint(address(this), 1_000_000);
         _mint(msg.sender, 1_000_000);
     }
