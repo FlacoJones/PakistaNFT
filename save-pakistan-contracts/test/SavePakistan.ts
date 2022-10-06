@@ -1,18 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, utils } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { SavePakistan, TreasuryMock } from "../typechain-types";
-
-// This corresponds to actual values on Enum from `SavePakistan.sol`
-const TokenVariant = {
-  RationBag: BigNumber.from("0"),
-  TemporaryShelter: BigNumber.from("1"),
-  HygieneKit: BigNumber.from("2"),
-  PortableToilets: BigNumber.from("3"),
-  Water: BigNumber.from("4"),
-  WaterWheel: BigNumber.from("5"),
-};
+import { TokenVariant } from "../utils";
 
 // TODO: Use mocking to replace the constant values on real tokens for USDT & USDC and return mock ERC20 token in test suite
 // TODO: Write more unit tests to test out the validation requirements on minting
@@ -52,6 +43,8 @@ describe("SavePakistan", () => {
     const quantity = BigNumber.from("1");
     const msgValue = etherMintRate.mul(quantity);
 
+    console.log("etherMintRate", utils.formatEther(etherMintRate));
+
     const tx = await contract.mintByPayingEth(TokenVariant.PortableToilets, quantity, {
       value: msgValue,
     });
@@ -77,4 +70,12 @@ describe("SavePakistan", () => {
     const tokenURIs = await Promise.all([savePakistan.uri("1"), savePakistan.uri("2")]);
     console.log("tokenURIs", tokenURIs);
   });
+
+  // it("should deploy fake SavePakistan contract", async () => {
+  //   const mockContract = <MockContract>await waffle.deployMockContract(deployer, ISavePakistan.abi);
+  //   mockContract.mock.uri.returns("carlomigueldy.eth");
+
+  //   const tokenMetadata = await savePakistan.uri("1");
+  //   console.log("tokenMetadata", tokenMetadata);
+  // });
 });
