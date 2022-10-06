@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, utils } from "ethers";
 import { ethers } from "hardhat";
-import { SavePakistan, TreasuryMock } from "../typechain-types";
+import { SavePakistan, TreasuryMock, USDCMock, USDTMock } from "../typechain-types";
 
 // This corresponds to actual values on Enum from `SavePakistan.sol`
 const TokenVariant = {
@@ -22,6 +22,8 @@ describe("SavePakistan", () => {
   const provider = ethers.getDefaultProvider();
   let savePakistan: SavePakistan;
   let treasuryMock: TreasuryMock;
+  let usdcMock: USDCMock;
+  let usdtMock: USDTMock;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -30,19 +32,37 @@ describe("SavePakistan", () => {
   before(async () => {
     [deployer, user1, user2, ...signers] = await ethers.getSigners();
 
-    // ERC1155
-    const SavePakistan = await ethers.getContractFactory("SavePakistan");
-    savePakistan = <SavePakistan>await SavePakistan.deploy();
-    savePakistan.deployed();
+    const baseURI =
+      "https://ipfs.io/ipfs/bafybeia65fmu7kd3qkiu3hn4km3mgb5amrjhcwnakevgg4yxvvspqkszhe/";
 
-    // Treasury
+    // Mock Treasury
     const TreasuryMock = await ethers.getContractFactory("TreasuryMock");
     treasuryMock = await TreasuryMock.deploy();
     await treasuryMock.deployed();
 
+    // Mock USDC & USDT
+    const [USDCMock, USDTMock] = await Promise.all([
+      ethers.getContractFactory("USDCMock"),
+      ethers.getContractFactory("USDTMock"),
+    ]);
+    [usdcMock, usdtMock] = await Promise.all([USDCMock.deploy(), USDTMock.deploy()]);
+    await Promise.all([usdcMock.deployed(), usdtMock.deployed()]);
+
+    // ERC1155
+    const SavePakistan = await ethers.getContractFactory("SavePakistan");
+    savePakistan = <SavePakistan>(
+      await SavePakistan.deploy(treasuryMock.address, usdcMock.address, usdtMock.address, baseURI)
+    );
+    await savePakistan.deployed();
+
     // check initial Ether balance
     const etherBalance = await provider.getBalance(savePakistan.address);
     console.log("savePakistan contract initial etherBalance", utils.formatEther(etherBalance));
+  });
+
+  it("should query ETHER_MINT_RATE", async () => {
+    const ETHER_MINT_RATE = await savePakistan.ETHER_MINT_RATE("0");
+    console.log("ETHER_MINT_RATE", utils.formatEther(ETHER_MINT_RATE));
   });
 
   it("should mint when quantity is 1 and sends correct amount of ether", async () => {
