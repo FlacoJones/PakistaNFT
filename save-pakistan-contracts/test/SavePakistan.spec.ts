@@ -171,6 +171,45 @@ describe("Spec: SavePakistan", () => {
   });
 
   describe("- mintWithToken", () => {
+    it("should revert when given token address is not supported", async () => {
+      const contract = savePakistan.connect(user1);
+
+      await expect(
+        contract.mintWithToken(Variant.HygieneKit, wethMock.address, "1")
+      ).to.be.revertedWith("SavePakistan: This token is not supported.");
+    });
+
+    it("should revert when attempting to mint more than the remaining supply", async () => {
+      const contract = savePakistan.connect(user1);
+      const maxSupply = await contract.getVariantMaxSupply(Variant.HygieneKit);
+      const usdcPrice = await contract.getVariantMintRate(Variant.HygieneKit, usdcMock.address);
+
+      // mint USDC to user1
+      let tx = await usdcMock.mintTo(user1.address, BigNumber.from(10_000_000));
+      await tx.wait();
+
+      // approve allowance
+      tx = await usdcMock.connect(user1).approve(contract.address, usdcPrice);
+      await tx.wait();
+
+      // mint 1 token
+      tx = await contract.mintWithToken(Variant.HygieneKit, usdcMock.address, "1");
+      await tx.wait();
+
+      const remainingSupply = await contract.getVariantRemainingSupply(Variant.HygieneKit);
+
+      console.log("maxSupply", maxSupply.toString());
+      console.log("remainingSupply", remainingSupply.toString());
+      console.log("usdcPrice", usdcPrice.toString());
+
+      // attempt to mint more than the max supply
+      await expect(
+        contract.mintWithToken(Variant.HygieneKit, usdcMock.address, maxSupply.add("1"))
+      ).to.be.revertedWith(
+        "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
+      );
+    });
+
     it("should mint with quantity 1 and send the correct amount of token", async () => {
       let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
       await tx.wait();
@@ -344,7 +383,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("_beforeTokenTransfer", () => {
+  describe("- _beforeTokenTransfer", () => {
     it("should not allow token transfers to any arbitrary address", async () => {
       const contract = savePakistan.connect(user1);
 
@@ -361,5 +400,20 @@ describe("Spec: SavePakistan", () => {
         "SavePakistan: Not allowed to transfer a token from/to arbitrary address."
       );
     });
+  });
+
+  // ! no burn() function exposed in the contract
+  describe("- _burn", () => {
+    // it("should not allow token burning", async () => {
+    //   const contract = savePakistan.connect(user1);
+    //   const ethPrice = await contract.getVariantEtherMintRate(Variant.RationBag);
+    //   let tx = await contract.mintWithEth(Variant.RationBag, "1", {
+    //     value: ethPrice,
+    //   });
+    //   await tx.wait();
+    //   await expect(
+    //     contract.burn(user1.address, user2.address, "1", "1", constants.HashZero)
+    //   ).to.be.revertedWith("SavePakistan: Not allowed to burn a token.");
+    // });
   });
 });
