@@ -11,13 +11,13 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @title SavePakistan
-/// 
-/// is an initiative being co-ordinated by individuals 
+///
+/// is an initiative being co-ordinated by individuals
 /// from Tayaba - who have already supported 30,000+ people since the crisis began.
-/// and Unchain Fund - who raised $10M for humanitarian aid in Ukraine earlier this year including 
-/// a $2.5M donation from Vitalik- to save thousands of lives in Pakistan and get critical support 
+/// and Unchain Fund - who raised $10M for humanitarian aid in Ukraine earlier this year including
+/// a $2.5M donation from Vitalik- to save thousands of lives in Pakistan and get critical support
 /// to those who need it NOW!!
-/// 
+///
 /// @author Andrew O'Brien, Carlo Miguel Dy
 /// @notice ERC1155 sale contract
 contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard {
@@ -254,6 +254,21 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _mint(msg.sender, tokenId, _quantity, "");
 
         emit MintByPayingToken(_tokenVariant, msg.sender, _quantity, amount, _tokenAddr, tokenId);
+    }
+
+    /**
+     * @dev Returns the name of the token.
+     */
+    function name() public view virtual returns (string memory) {
+        return "Save Pakistan";
+    }
+
+    /**
+     * @dev Returns the symbol of the token, usually a shorter version of the
+     * name.
+     */
+    function symbol() public view virtual returns (string memory) {
+        return "SP";
     }
 
     /**
