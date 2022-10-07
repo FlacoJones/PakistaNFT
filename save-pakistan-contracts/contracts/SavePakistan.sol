@@ -47,6 +47,10 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
     address public immutable usdtAddr;
 
+    /// @notice The Chainlink Price Oracle address
+    /// @dev See https://optimistic.etherscan.io/address/0x13e3Ee699D1909E989722E753853AE30b17e08c5
+    address public immutable ethUsdOracleAddress;
+
     /// @notice Keeps track of tokens corresponding to a tokenId
     Counters.Counter private _tokenCounter;
 
@@ -123,12 +127,14 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         address _treasuryAddr,
         address _usdcAddr,
         address _usdtAddr,
+        address _ethUsdOracleAddress,
         string memory _baseURI
     ) ERC1155("") {
         treasuryAddr = _treasuryAddr;
         usdcAddr = _usdcAddr;
         usdtAddr = _usdtAddr;
         baseURI = _baseURI;
+        ethUsdOracleAddress = _ethUsdOracleAddress;
 
         usdc = IERC20(usdcAddr);
         usdt = IERC20(usdtAddr);
