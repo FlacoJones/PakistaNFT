@@ -75,7 +75,7 @@ describe("Spec: SavePakistan", () => {
 
     describe('getVariantEtherPrice', () => {
       // TODO: Repeat this for all token variants
-      it.only('should return the correct Ether amount for a given amount of USD', async () => {
+      it('should return the correct Ether amount for a given amount of USD', async () => {
         const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(BigNumber.from("0"));
         expect(rationBagEtherPrice).to.be.eq(BigNumber.from('22675736961451247'));
       })
@@ -154,7 +154,7 @@ describe("Spec: SavePakistan", () => {
     it("should mint when quantity is 1 and sends correct amount of ether", async () => {
       const contract = savePakistan.connect(user1);
 
-      const etherMintRate = await contract.getVariantEtherMintRate(BigNumber.from("0"));
+      const etherMintRate = await contract.getVariantEtherMintRate(BigNumber.from("3"));
       const quantity = BigNumber.from("1");
       const msgValue = etherMintRate.mul(quantity);
 
