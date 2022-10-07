@@ -76,8 +76,8 @@ const config: HardhatUserConfig = {
       mainnet: process.env.MAINNET_API_KEY || "",
       kovan: process.env.MAINNET_API_KEY || "",
       goerli: process.env.MAINNET_API_KEY || "",
-      optimisticEthereum: process.env.OP_MAINNET_API_KEY || "",
-      optimismGoerli: process.env.OP_MAINNET_API_KEY || "",
+      optimisticEthereum: process.env.OP_API_KEY || "",
+      optimismGoerli: process.env.OP_API_KEY || "",
       polygonMumbai: process.env.POLYGON_API_KEY || "",
     },
     customChains: [

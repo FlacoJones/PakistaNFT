@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "scripts": {
     "postinstall": "hardhat compile",
-    "pr:create": "gh pr create --fill --title=$(git rev-parse --abbrev-ref HEAD)",
+    "deploy:mainnet": "hardhat run scripts/deploy.mainnet.ts --network optimismEthereum",
+    "deploy:testnet": "hardhat run scripts/deploy.testnet.ts --network optimismGoerli",
     "deploy:mumbai": "hardhat run scripts/deploy.ts --network mumbai",
+    "pr:create": "gh pr create --fill --title=$(git rev-parse --abbrev-ref HEAD)",
     "format": "prettier --write contracts/**/*/*.sol",
     "abi:export": "hardhat export-abi",
     "abi:clear": "hardhat clear-abi",
