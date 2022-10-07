@@ -16,8 +16,6 @@ const Variant = {
 };
 
 // TODO: Write more unit tests to test out the validation requirements on minting
-// TODO: Write unit test to test out withdrawing Ether and ERC20 tokens to treasury
-// TODO: Write unit test to assert if the USDC & USDT mint rates are in correct value in USD
 describe("Spec: SavePakistan", () => {
   const provider = ethers.provider;
   let savePakistan: SavePakistan;
