@@ -1,4 +1,4 @@
-import { SavePakistan, TreasuryMock, USDCMock, USDTMock } from "../typechain-types";
+import { SavePakistan, TreasuryMock, USDCMock, USDTMock, ChainlinkEthUsdOracleMock } from "../typechain-types";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, constants, utils } from "ethers";
@@ -23,6 +23,7 @@ describe("Spec: SavePakistan", () => {
   let usdcMock: USDCMock;
   let usdtMock: USDTMock;
   let wethMock: USDTMock;
+  let chainlinkEthUsdOracleMock: ChainlinkEthUsdOracleMock;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -40,22 +41,24 @@ describe("Spec: SavePakistan", () => {
     await treasuryMock.deployed();
 
     // Mock USDC & USDT
-    const [USDCMock, USDTMock, WETHMock] = await Promise.all([
+    const [USDCMock, USDTMock, WETHMock, ChainlinkEthUsdOracleMock] = await Promise.all([
       ethers.getContractFactory("USDCMock"),
       ethers.getContractFactory("USDTMock"),
       ethers.getContractFactory("USDTMock"),
+      ethers.getContractFactory("ChainlinkEthUsdOracleMock"),
     ]);
-    [usdcMock, usdtMock, wethMock] = await Promise.all([
+    [usdcMock, usdtMock, wethMock, chainlinkEthUsdOracleMock] = await Promise.all([
       USDCMock.deploy(),
       USDTMock.deploy(),
       WETHMock.deploy(),
+      ChainlinkEthUsdOracleMock.deploy()
     ]);
-    await Promise.all([usdcMock.deployed(), usdtMock.deployed(), wethMock.deployed()]);
+    await Promise.all([usdcMock.deployed(), usdtMock.deployed(), wethMock.deployed(), chainlinkEthUsdOracleMock.deployed()]);
 
     // ERC1155
     const SavePakistan = await ethers.getContractFactory("SavePakistan");
     savePakistan = <SavePakistan>(
-      await SavePakistan.deploy(treasuryMock.address, usdcMock.address, usdtMock.address, baseURI)
+      await SavePakistan.deploy(treasuryMock.address, usdcMock.address, usdtMock.address, chainlinkEthUsdOracleMock.address, baseURI)
     );
     await savePakistan.deployed();
 
