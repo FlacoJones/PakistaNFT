@@ -10,6 +10,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
 /// @title SavePakistan
 ///
 /// is an initiative being co-ordinated by individuals
@@ -49,7 +51,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
     /// @notice The Chainlink Price Oracle address
     /// @dev See https://optimistic.etherscan.io/address/0x13e3Ee699D1909E989722E753853AE30b17e08c5
-    address public immutable ethUsdOracleAddress;
+    AggregatorV3Interface public immutable priceFeed;
 
     /// @notice Keeps track of tokens corresponding to a tokenId
     Counters.Counter private _tokenCounter;
@@ -87,6 +89,12 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         1 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
         1 ether // H2O Wheel // ! this is a placeholder value, to be replaced
     ];
+
+    function getLatestPrice() public view returns (int256) {
+        (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) = priceFeed
+            .latestRoundData();
+        return price; // <== feed return is with 8 or 18 decimals to ensure conversion factor
+    }
 
     /// @notice The minting rates for USDC token
     uint256[6] public USDC_MINT_RATE = [
@@ -127,14 +135,14 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         address _treasuryAddr,
         address _usdcAddr,
         address _usdtAddr,
-        address _ethUsdOracleAddress,
+        address _priceFeed,
         string memory _baseURI
     ) ERC1155("") {
         treasuryAddr = _treasuryAddr;
         usdcAddr = _usdcAddr;
         usdtAddr = _usdtAddr;
+        priceFeed = AggregatorV3Interface(_priceFeed);
         baseURI = _baseURI;
-        ethUsdOracleAddress = _ethUsdOracleAddress;
 
         usdc = IERC20(usdcAddr);
         usdt = IERC20(usdtAddr);
