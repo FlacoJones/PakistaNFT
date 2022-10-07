@@ -76,32 +76,32 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// ? how do we ensure the amount of ether value matches the $ value?
     /// @notice The minting rates for native ether
     uint256[6] public ETHER_MINT_RATE = [
-        0.30 ether, // Ration Bag // ! this is a placeholder value, to be replaced
-        0.199 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
-        0.10 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
-        0.65 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
-        0.00035 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
-        0.25 ether // H2O Wheel // ! this is a placeholder value, to be replaced
+        1 ether, // Ration Bag // ! this is a placeholder value, to be replaced
+        1 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
+        1 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
+        1 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
+        1 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
+        1 ether // H2O Wheel // ! this is a placeholder value, to be replaced
     ];
 
     /// @notice The minting rates for USDC token
     uint256[6] public USDC_MINT_RATE = [
-        uint256(30 * 10**6), // Ration Bag
-        uint256(100 * 10**6), // Temporary Shelter
-        uint256(10 * 10**6), // Hygiene Kit
-        uint256(65 * 10**6), // Portable Toilets
-        uint256(0.0035 * 10**6), // Clean and Safe Water
-        uint256(25 * 10**6) // H2O Wheel
+        uint256(30_000_000), // Ration Bag
+        uint256(100_000_000), // Temporary Shelter
+        uint256(10_000_000), // Hygiene Kit
+        uint256(65_000_000), // Portable Toilets
+        uint256(3_500), // Clean and Safe Water
+        uint256(25_000_000) // H2O Wheel
     ];
 
     /// @notice The minting rates for USDT token
     uint256[6] public USDT_MINT_RATE = [
-        uint256(30 * 10**18), // Ration Bag
-        uint256(100 * 10**18), // Temporary Shelter
-        uint256(10 * 10**18), // Hygiene Kit
-        uint256(65 * 10**18), // Portable Toilets
-        uint256(0.0035 * 10**18), // Clean and Safe Water
-        uint256(25 * 10**18) // H2O Wheel
+        uint256(30_000_000_000_000_000_000), // Ration Bag
+        uint256(100_000_000_000_000_000_000), // Temporary Shelter
+        uint256(10_000_000_000_000_000_000), // Hygiene Kit
+        uint256(65_000_000_000_000_000_000), // Portable Toilets
+        uint256(3_500_000_000_000_000), // Clean and Safe Water
+        uint256(25_000_000_000_000_000_000) // H2O Wheel
     ];
 
     event MintByPayingEth(TokenVariant indexed tokenVariant, address indexed minter, uint256 quantity, uint256 tokenId);
