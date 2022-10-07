@@ -24,7 +24,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
 
-    enum TokenVariant {
+    enum Variant {
         RationBag,
         TemporaryShelter,
         HygieneKit,
@@ -63,50 +63,50 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     mapping(address => uint256[]) private _tokenAddrToRates;
 
     /// @notice Mapping that holds the max supply allocation for each token variant
-    mapping(TokenVariant => uint256) private _tokenVariantToMaxSupply;
+    mapping(Variant => uint256) private _variantToMaxSupply;
 
     /// @notice Mapping that holds the minting count for each token variant
-    mapping(TokenVariant => uint256) private _tokenVariantToMintCount;
+    mapping(Variant => uint256) private _variantToMintCount;
 
     /// @notice Mapping that holds the token variant of a tokenId
-    mapping(uint256 => TokenVariant) private _tokenIdToTokenVariant;
+    mapping(uint256 => Variant) private _tokenIdToVariant;
 
     // TODO: Verify with Andrew O'Brien regarding ether mint rates as they change overtime
     // TODO: Better approach to putting up sale price in Ether
     /// ? how do we ensure the amount of ether value matches the $ value?
     /// @notice The minting rates for native ether
     uint256[6] public ETHER_MINT_RATE = [
-        0.30 ether, // Ration Bag // ! this is a placeholder value, to be replaced
-        0.199 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
-        0.10 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
-        0.65 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
-        0.00035 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
-        0.25 ether // H2O Wheel // ! this is a placeholder value, to be replaced
+        1 ether, // Ration Bag // ! this is a placeholder value, to be replaced
+        1 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
+        1 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
+        1 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
+        1 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
+        1 ether // H2O Wheel // ! this is a placeholder value, to be replaced
     ];
 
     /// @notice The minting rates for USDC token
     uint256[6] public USDC_MINT_RATE = [
-        uint256(30 * 10**6), // Ration Bag
-        uint256(100 * 10**6), // Temporary Shelter
-        uint256(10 * 10**6), // Hygiene Kit
-        uint256(65 * 10**6), // Portable Toilets
-        uint256(0.0035 * 10**6), // Clean and Safe Water
-        uint256(25 * 10**6) // H2O Wheel
+        uint256(30_000_000), // Ration Bag
+        uint256(100_000_000), // Temporary Shelter
+        uint256(10_000_000), // Hygiene Kit
+        uint256(65_000_000), // Portable Toilets
+        uint256(3_500), // Clean and Safe Water
+        uint256(25_000_000) // H2O Wheel
     ];
 
     /// @notice The minting rates for USDT token
     uint256[6] public USDT_MINT_RATE = [
-        uint256(30 * 10**18), // Ration Bag
-        uint256(100 * 10**18), // Temporary Shelter
-        uint256(10 * 10**18), // Hygiene Kit
-        uint256(65 * 10**18), // Portable Toilets
-        uint256(0.0035 * 10**18), // Clean and Safe Water
-        uint256(25 * 10**18) // H2O Wheel
+        uint256(30_000_000_000_000_000_000), // Ration Bag
+        uint256(100_000_000_000_000_000_000), // Temporary Shelter
+        uint256(10_000_000_000_000_000_000), // Hygiene Kit
+        uint256(65_000_000_000_000_000_000), // Portable Toilets
+        uint256(3_500_000_000_000_000), // Clean and Safe Water
+        uint256(25_000_000_000_000_000_000) // H2O Wheel
     ];
 
-    event MintByPayingEth(TokenVariant indexed tokenVariant, address indexed minter, uint256 quantity, uint256 tokenId);
-    event MintByPayingToken(
-        TokenVariant indexed tokenVariant,
+    event MintWithEth(Variant indexed Variant, address indexed minter, uint256 quantity, uint256 tokenId);
+    event MintWithToken(
+        Variant indexed Variant,
         address indexed minter,
         uint256 quantity,
         uint256 amount,
@@ -145,12 +145,12 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _tokenAddrToRates[usdtAddr] = USDT_MINT_RATE;
 
         // defining the max supply for each token variants
-        _tokenVariantToMaxSupply[TokenVariant.RationBag] = uint256(5_000);
-        _tokenVariantToMaxSupply[TokenVariant.TemporaryShelter] = uint256(1_000);
-        _tokenVariantToMaxSupply[TokenVariant.HygieneKit] = uint256(5_000);
-        _tokenVariantToMaxSupply[TokenVariant.PortableToilets] = uint256(1_000);
-        _tokenVariantToMaxSupply[TokenVariant.Water] = uint256(5_000_000);
-        _tokenVariantToMaxSupply[TokenVariant.WaterWheel] = uint256(5_000);
+        _variantToMaxSupply[Variant.RationBag] = uint256(5_000);
+        _variantToMaxSupply[Variant.TemporaryShelter] = uint256(1_000);
+        _variantToMaxSupply[Variant.HygieneKit] = uint256(5_000);
+        _variantToMaxSupply[Variant.PortableToilets] = uint256(1_000);
+        _variantToMaxSupply[Variant.Water] = uint256(5_000_000);
+        _variantToMaxSupply[Variant.WaterWheel] = uint256(5_000);
     }
 
     /**
@@ -181,22 +181,18 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
     /**
      * @notice Mints a token by purchasing using ether.
-     * @param _tokenVariant Identifies the type of token to mint.
+     * @param _variant Identifies the type of token to mint.
      * @param _quantity The quantity of tokens to be minted.
      *
-     * Emits {MintByPayingEth} event.
+     * Emits {MintWithEth} event.
      */
-    function mintByPayingEth(TokenVariant _tokenVariant, uint256 _quantity) external payable nonReentrant {
+    function mintWithEth(Variant _variant, uint256 _quantity) external payable nonReentrant {
         require(
-            _quantity < getTokenVariantRemainingSupply(_tokenVariant),
+            _quantity < getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
         );
-        require(
-            _quantity < getTokenVariantMaxSupply(_tokenVariant),
-            "SavePakistan: The requested quantity to purchase is beyond the max supply."
-        );
 
-        uint256 rate = getTokenVariantEtherMintRate(_tokenVariant);
+        uint256 rate = getVariantEtherMintRate(_variant);
         uint256 amount = _quantity * rate;
         require(msg.value >= amount, "SavePakistan: Not enough Ether sent.");
 
@@ -207,39 +203,35 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _tokenCounter.increment();
         uint256 tokenId = _tokenCounter.current();
 
-        _tokenVariantToMintCount[_tokenVariant] += _quantity;
-        _tokenIdToTokenVariant[tokenId] = _tokenVariant;
+        _variantToMintCount[_variant] += _quantity;
+        _tokenIdToVariant[tokenId] = _variant;
 
         _mint(msg.sender, tokenId, _quantity, "");
 
-        emit MintByPayingEth(_tokenVariant, msg.sender, _quantity, tokenId);
+        emit MintWithEth(_variant, msg.sender, _quantity, tokenId);
     }
 
     /**
      * @notice Mints a token by purchasing using ERC20 token.
-     * @param _tokenVariant Identifies the type of token to mint.
+     * @param _variant Identifies the type of token to mint.
      * @param _tokenAddr <to be defined>
      * @param _quantity The quantity of tokens to be minted.
      *
-     * Emits {MintByPayingToken} event.
+     * Emits {MintWithToken} event.
      */
-    function mintByPayingToken(
-        TokenVariant _tokenVariant,
+    function mintWithToken(
+        Variant _variant,
         address _tokenAddr,
         uint256 _quantity
     ) external nonReentrant {
         require(_tokenAddrToSupported[_tokenAddr], "SavePakistan: This token is not supported.");
         require(
-            _quantity < getTokenVariantRemainingSupply(_tokenVariant),
+            _quantity < getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
-        );
-        require(
-            _quantity < getTokenVariantMaxSupply(_tokenVariant),
-            "SavePakistan: The requested quantity to purchase is beyond the max supply."
         );
 
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
-        uint256 rate = rates[uint256(_tokenVariant)];
+        uint256 rate = rates[uint256(_variant)];
         uint256 amount = _quantity * rate;
         require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
 
@@ -248,12 +240,12 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _tokenCounter.increment();
         uint256 tokenId = _tokenCounter.current();
 
-        _tokenVariantToMintCount[_tokenVariant] += _quantity;
-        _tokenIdToTokenVariant[tokenId] = _tokenVariant;
+        _variantToMintCount[_variant] += _quantity;
+        _tokenIdToVariant[tokenId] = _variant;
 
         _mint(msg.sender, tokenId, _quantity, "");
 
-        emit MintByPayingToken(_tokenVariant, msg.sender, _quantity, amount, _tokenAddr, tokenId);
+        emit MintWithToken(_variant, msg.sender, _quantity, amount, _tokenAddr, tokenId);
     }
 
     /**
@@ -273,44 +265,44 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
     /**
      * @notice Gets the supply minted for a token variant.
-     * @param _tokenVariant The token variant corresponds to a real world item.
+     * @param _variant The token variant corresponds to a real world item.
      */
-    function getTokenVariantSupply(TokenVariant _tokenVariant) public view returns (uint256) {
-        return _tokenVariantToMintCount[_tokenVariant];
+    function getVariantSupply(Variant _variant) public view returns (uint256) {
+        return _variantToMintCount[_variant];
     }
 
     /**
      * @notice Gets the remaining supply for a token variant.
-     * @param _tokenVariant The token variant corresponds to a real world item.
+     * @param _variant The token variant corresponds to a real world item.
      */
-    function getTokenVariantRemainingSupply(TokenVariant _tokenVariant) public view returns (uint256) {
-        return getTokenVariantMaxSupply(_tokenVariant) - _tokenVariantToMintCount[_tokenVariant];
+    function getVariantRemainingSupply(Variant _variant) public view returns (uint256) {
+        return getVariantMaxSupply(_variant) - _variantToMintCount[_variant];
     }
 
     /**
      * @notice Gets the max supply for a token variant.
-     * @param _tokenVariant The token variant corresponds to a real world item.
+     * @param _variant The token variant corresponds to a real world item.
      */
-    function getTokenVariantMaxSupply(TokenVariant _tokenVariant) public view returns (uint256) {
-        return _tokenVariantToMaxSupply[_tokenVariant];
+    function getVariantMaxSupply(Variant _variant) public view returns (uint256) {
+        return _variantToMaxSupply[_variant];
     }
 
     /**
      * @notice Gets the mint rate for a token variant in Ether.
-     * @param _tokenVariant The token variant corresponds to a real world item.
+     * @param _variant The token variant corresponds to a real world item.
      */
-    function getTokenVariantEtherMintRate(TokenVariant _tokenVariant) public view returns (uint256) {
-        return ETHER_MINT_RATE[uint256(_tokenVariant)];
+    function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
+        return ETHER_MINT_RATE[uint256(_variant)];
     }
 
     /**
      * @notice Gets the mint rate for a token variant in Ether.
-     * @param _tokenVariant The token variant corresponds to a real world item.
+     * @param _variant The token variant corresponds to a real world item.
      * @param _tokenAddr A supported token to receive payment in contract.
      */
-    function getTokenVariantMintRate(TokenVariant _tokenVariant, address _tokenAddr) public view returns (uint256) {
+    function getVariantMintRate(Variant _variant, address _tokenAddr) public view returns (uint256) {
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
-        return rates[uint256(_tokenVariant)];
+        return rates[uint256(_variant)];
     }
 
     /**
@@ -343,8 +335,8 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @dev See {ERC1155-uri}.
      */
     function uri(uint256 _tokenId) public view override returns (string memory) {
-        TokenVariant tokenVariant = _tokenIdToTokenVariant[_tokenId];
-        string memory tokenURI = Strings.toString(uint256(tokenVariant));
+        Variant variant = _tokenIdToVariant[_tokenId];
+        string memory tokenURI = Strings.toString(uint256(variant));
         return string(abi.encodePacked(baseURI, tokenURI, ".json"));
     }
 
