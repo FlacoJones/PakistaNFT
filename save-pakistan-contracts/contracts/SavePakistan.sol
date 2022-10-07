@@ -88,6 +88,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     ];
 
     /// @notice The minting rates for USD Apache Helicopter backed dollars
+    /// TODO Are these correct?
     uint256[6] public USD_MINT_RATE = [
         uint256(30), // Ration Bag
         uint256(100), // Temporary Shelter
@@ -331,8 +332,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @notice Returns current token variant price in wei based on the latest Ether/USD price on Chainlink Oracle
      */
     function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
-        uint256 _price = getLatestPrice() / 10**8; // 132356008734
-        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / _price;
+        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / (getLatestPrice() / 10**8);
     }
 
     /**

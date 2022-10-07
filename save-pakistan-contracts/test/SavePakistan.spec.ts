@@ -73,11 +73,35 @@ describe("Spec: SavePakistan", () => {
       expect(price).to.be.eq(132356008734);
     })
 
-    describe('getVariantEtherPrice', () => {
-      // TODO: Repeat this for all token variants
-      it('should return the correct Ether amount for a given amount of USD', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(BigNumber.from("0"));
+    describe.only('getVariantEtherMintRate', () => {
+      it('should return correct wei price for RationBag', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.RationBag);
         expect(rationBagEtherPrice).to.be.eq(BigNumber.from('22675736961451247'));
+      })
+
+      it('should return correct wei price for TemporaryShelter', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.TemporaryShelter);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('75585789871504157'));
+      })
+
+      it('should return correct wei price for HygieneKit', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.HygieneKit);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('7558578987150415'));
+      })
+
+      it('should return correct wei price for PortableToilets', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.PortableToilets);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('49130763416477702'));
+      })
+
+      it('should return correct wei price for Water', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.Water);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('2267573696145124'));
+      })
+
+      it('should return correct wei price for WaterWheel', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.WaterWheel);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('18896447467876039'));
       })
     })
   })
