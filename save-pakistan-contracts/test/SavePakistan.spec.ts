@@ -1,12 +1,12 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { assert, expect } from "chai";
-import { BigNumber, utils } from "ethers";
-import { formatEther, formatUnits } from "ethers/lib/utils";
-import { ethers } from "hardhat";
 import { SavePakistan, TreasuryMock, USDCMock, USDTMock } from "../typechain-types";
+import { formatEther, formatUnits } from "ethers/lib/utils";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BigNumber, utils } from "ethers";
+import { assert, expect } from "chai";
+import { ethers } from "hardhat";
 
 // This corresponds to actual values on Enum from `SavePakistan.sol`
-const TokenVariant = {
+const Variant = {
   RationBag: BigNumber.from("0"),
   TemporaryShelter: BigNumber.from("1"),
   HygieneKit: BigNumber.from("2"),
@@ -142,7 +142,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- mintByPayingEth", () => {
+  describe("- mintWithEth", () => {
     it("should mint when quantity is 1 and sends correct amount of ether", async () => {
       const contract = savePakistan.connect(user1);
 
@@ -150,7 +150,7 @@ describe("Spec: SavePakistan", () => {
       const quantity = BigNumber.from("1");
       const msgValue = etherMintRate.mul(quantity);
 
-      const tx = await contract.mintByPayingEth(TokenVariant.PortableToilets, quantity, {
+      const tx = await contract.mintWithEth(Variant.PortableToilets, quantity, {
         value: msgValue,
       });
       expect(tx.value).to.be.eq(etherMintRate);
@@ -164,7 +164,7 @@ describe("Spec: SavePakistan", () => {
       const quantity = BigNumber.from("5");
       const msgValue = etherMintRate.mul(quantity);
 
-      const tx = await contract.mintByPayingEth(TokenVariant.Water, quantity, {
+      const tx = await contract.mintWithEth(Variant.Water, quantity, {
         value: msgValue,
       });
       expect(tx.value).to.be.eq(msgValue);
@@ -172,14 +172,14 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- mintByPayingToken", () => {
+  describe("- mintWithToken", () => {
     before(async () => {
       let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
       await tx.wait();
     });
 
     it("should mint with quantity 1 and send the correct amount of token", async () => {
-      const usdcMintRate = await savePakistan.USDC_MINT_RATE(TokenVariant.TemporaryShelter);
+      const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
       const balanceBN = await usdcMock.balanceOf(user1.address);
 
       let tx = await usdcMock.connect(user1).approve(savePakistan.address, usdcMintRate);
@@ -187,7 +187,7 @@ describe("Spec: SavePakistan", () => {
 
       tx = await savePakistan
         .connect(user1)
-        .mintByPayingToken(TokenVariant.TemporaryShelter, usdcMock.address, BigNumber.from("1"));
+        .mintWithToken(Variant.TemporaryShelter, usdcMock.address, BigNumber.from("1"));
       await tx.wait();
 
       const currentBalanceBN = await usdcMock.balanceOf(user1.address);
@@ -197,7 +197,7 @@ describe("Spec: SavePakistan", () => {
     });
 
     it("should mint with quantity 5 and send the correct amount of token", async () => {
-      const usdcMintRate = await savePakistan.USDC_MINT_RATE(TokenVariant.TemporaryShelter);
+      const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
       const balanceBN = await usdcMock.balanceOf(user1.address);
       const quantity = BigNumber.from("5");
 
@@ -208,7 +208,7 @@ describe("Spec: SavePakistan", () => {
 
       tx = await savePakistan
         .connect(user1)
-        .mintByPayingToken(TokenVariant.TemporaryShelter, usdcMock.address, quantity);
+        .mintWithToken(Variant.TemporaryShelter, usdcMock.address, quantity);
       await tx.wait();
 
       const currentBalanceBN = await usdcMock.balanceOf(user1.address);
@@ -218,7 +218,7 @@ describe("Spec: SavePakistan", () => {
     });
 
     it("should revert mint when user has no USDC balance", async () => {
-      const usdcMintRate = await savePakistan.USDC_MINT_RATE(TokenVariant.TemporaryShelter);
+      const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
       const quantity = BigNumber.from("5");
 
       let tx = await usdcMock
@@ -229,7 +229,7 @@ describe("Spec: SavePakistan", () => {
       await expect(
         savePakistan
           .connect(user2)
-          .mintByPayingToken(TokenVariant.TemporaryShelter, usdcMock.address, quantity)
+          .mintWithToken(Variant.TemporaryShelter, usdcMock.address, quantity)
       ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
     });
   });
@@ -338,6 +338,13 @@ describe("Spec: SavePakistan", () => {
     it("should return token URIs for specified tokens", async () => {
       const tokenURIs = await Promise.all([savePakistan.uri("1"), savePakistan.uri("2")]);
       console.log("tokenURIs", tokenURIs);
+    });
+  });
+
+  describe("_beforeTokenTransfer", () => {
+    it("should not allow token transfers to any arbitrary address", async () => {
+      // ...
+      // savePakistan.safeTransferFrom()
     });
   });
 });
