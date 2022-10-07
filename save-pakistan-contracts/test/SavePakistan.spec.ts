@@ -28,7 +28,7 @@ describe("Spec: SavePakistan", () => {
   let user2: SignerWithAddress;
   let signers: SignerWithAddress[];
 
-  before(async () => {
+  beforeEach(async () => {
     [deployer, user1, user2, ...signers] = await ethers.getSigners();
 
     const baseURI =
@@ -144,7 +144,7 @@ describe("Spec: SavePakistan", () => {
     it("should mint when quantity is 1 and sends correct amount of ether", async () => {
       const contract = savePakistan.connect(user1);
 
-      const etherMintRate = await contract.getTokenVariantEtherMintRate(BigNumber.from("0"));
+      const etherMintRate = await contract.getVariantEtherMintRate(BigNumber.from("0"));
       const quantity = BigNumber.from("1");
       const msgValue = etherMintRate.mul(quantity);
 
@@ -158,7 +158,7 @@ describe("Spec: SavePakistan", () => {
     it("should mint when quantity is 5 and sends correct amount of ether", async () => {
       const contract = savePakistan.connect(user1);
 
-      const etherMintRate = await contract.getTokenVariantEtherMintRate(BigNumber.from("4"));
+      const etherMintRate = await contract.getVariantEtherMintRate(BigNumber.from("4"));
       const quantity = BigNumber.from("5");
       const msgValue = etherMintRate.mul(quantity);
 
@@ -171,16 +171,14 @@ describe("Spec: SavePakistan", () => {
   });
 
   describe("- mintWithToken", () => {
-    before(async () => {
+    it("should mint with quantity 1 and send the correct amount of token", async () => {
       let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
       await tx.wait();
-    });
 
-    it("should mint with quantity 1 and send the correct amount of token", async () => {
       const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
       const balanceBN = await usdcMock.balanceOf(user1.address);
 
-      let tx = await usdcMock.connect(user1).approve(savePakistan.address, usdcMintRate);
+      tx = await usdcMock.connect(user1).approve(savePakistan.address, usdcMintRate);
       await tx.wait();
 
       tx = await savePakistan
@@ -195,13 +193,14 @@ describe("Spec: SavePakistan", () => {
     });
 
     it("should mint with quantity 5 and send the correct amount of token", async () => {
+      let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
+      await tx.wait();
+
       const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
       const balanceBN = await usdcMock.balanceOf(user1.address);
       const quantity = BigNumber.from("5");
 
-      let tx = await usdcMock
-        .connect(user1)
-        .approve(savePakistan.address, usdcMintRate.mul(quantity));
+      tx = await usdcMock.connect(user1).approve(savePakistan.address, usdcMintRate.mul(quantity));
       await tx.wait();
 
       tx = await savePakistan
@@ -270,6 +269,12 @@ describe("Spec: SavePakistan", () => {
     });
 
     it("should withdraw tokens to treasury", async () => {
+      let tx = await usdcMock.mintTo(savePakistan.address, utils.parseUnits("5000", 6));
+      await tx.wait();
+
+      tx = await usdtMock.mintTo(savePakistan.address, utils.parseUnits("5000", 18));
+      await tx.wait();
+
       const [
         prevTreasuryUsdcBalance,
         prevSavePakistanUsdcBalance,
