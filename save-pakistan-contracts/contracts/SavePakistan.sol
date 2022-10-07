@@ -77,37 +77,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @notice Mapping that holds the token variant of a tokenId
     mapping(uint256 => Variant) private _tokenIdToVariant;
 
-    // TODO: Verify with Andrew O'Brien regarding ether mint rates as they change overtime
-    // TODO: Better approach to putting up sale price in Ether
-    /// ? how do we ensure the amount of ether value matches the $ value?
-    /// @notice The minting rates for native ether
-    uint256[6] public ETHER_MINT_RATE = [
-        1 ether, // Ration Bag // ! this is a placeholder value, to be replaced
-        1 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
-        1 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
-        1 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
-        1 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
-        1 ether // H2O Wheel // ! this is a placeholder value, to be replaced
-    ];
-
-    function getLatestPrice() public view returns (int256) {
-        (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) = priceFeed
-            .latestRoundData();
-        return price; // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
-    }
-
-    function foo() external view returns (uin256) {
-        return getLatestPrice() * 10;
-    }
-
-    function tokenAmount(uint256 amountETH) public view returns (uint256) {
-        //Sent amountETH, how many usd I have
-        uint256 ethUsd = uint256(getLatestPrice());
-        uint256 amountUSD = (amountETH * ethUsd) / 1000000000000000000; //ETH = 18 decimal places
-        uint256 amountToken = amountUSD / tokenPrice / 10000; //2 decimal places
-        return amountToken;
-    }
-
     /// @notice The minting rates for USDC token
     uint256[6] public USDC_MINT_RATE = [
         uint256(30_000_000), // Ration Bag
@@ -116,6 +85,16 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256(65_000_000), // Portable Toilets
         uint256(3_500), // Clean and Safe Water
         uint256(25_000_000) // H2O Wheel
+    ];
+
+    /// @notice The minting rates for USD Apache Helicopter backed dollars
+    uint256[6] public USD_MINT_RATE = [
+        uint256(30), // Ration Bag
+        uint256(100), // Temporary Shelter
+        uint256(10), // Hygiene Kit
+        uint256(65), // Portable Toilets
+        uint256(3), // Clean and Safe Water
+        uint256(25) // H2O Wheel
     ];
 
     /// @notice The minting rates for USDT token
@@ -316,14 +295,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /**
      * @notice Gets the mint rate for a token variant in Ether.
      * @param _variant The token variant corresponds to a real world item.
-     */
-    function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
-        return ETHER_MINT_RATE[uint256(_variant)];
-    }
-
-    /**
-     * @notice Gets the mint rate for a token variant in Ether.
-     * @param _variant The token variant corresponds to a real world item.
      * @param _tokenAddr A supported token to receive payment in contract.
      */
     function getVariantMintRate(Variant _variant, address _tokenAddr) public view returns (uint256) {
@@ -345,6 +316,23 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function getTokenAddrSupported(address _tokenAddr) public view returns (bool) {
         return _tokenAddrToSupported[_tokenAddr];
+    }
+
+    /**
+     * @notice Returns the price of 1 Ether in USD
+     */
+    function getLatestPrice() public view returns (uint256) {
+        (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) = priceFeed
+            .latestRoundData();
+        return uint256(price); // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
+    }
+
+    /**
+     * @notice Returns current token variant price in wei based on the latest Ether/USD price on Chainlink Oracle
+     */
+    function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
+        uint256 _price = getLatestPrice() / 10**8; // 132356008734
+        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / _price;
     }
 
     /**

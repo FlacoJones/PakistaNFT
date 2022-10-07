@@ -67,23 +67,18 @@ describe("Spec: SavePakistan", () => {
     console.log("savePakistan contract initial etherBalance", utils.formatEther(etherBalance));
   });
 
-  // TODO: When the mocking or Oracle has been setup, should write unit test for it
-  describe("- ETHER_MINT_RATE", () => {
-    it("should query ETHER_MINT_RATE", async () => {
-      const ETHER_MINT_RATE = await savePakistan.ETHER_MINT_RATE("0");
-      console.log("ETHER_MINT_RATE", utils.formatEther(ETHER_MINT_RATE));
-    });
-
-    it("should return ether rate based on USD pairing price", async () => {
-      const ETHER_MINT_RATE = await savePakistan.ETHER_MINT_RATE("0");
-      console.log("ETHER_MINT_RATE", utils.formatEther(ETHER_MINT_RATE));
-    });
-  });
-
-  describe.only("ETH/USD Price Feed", () => {
+  describe("ETH/USD Price Feed", () => {
     it('should return latest price', async () => {
       const price = await savePakistan.getLatestPrice();
       expect(price).to.be.eq(132356008734);
+    })
+
+    describe('getVariantEtherPrice', () => {
+      // TODO: Repeat this for all token variants
+      it.only('should return the correct Ether amount for a given amount of USD', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(BigNumber.from("0"));
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('22675736961451247'));
+      })
     })
   })
 
