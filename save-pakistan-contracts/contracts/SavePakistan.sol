@@ -49,8 +49,8 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
     address public immutable usdtAddr;
 
-    /// @notice The Chainlink Price Oracle address
-    /// @dev See https://optimistic.etherscan.io/address/0x13e3Ee699D1909E989722E753853AE30b17e08c5
+    /// @notice The Chainlink ETH/USD Price Oracle address
+    /// @dev See https://optimistic.etherscan.io/address/0x02f5e9e9dcc66ba6392f6904d5fcf8625d9b19c9
     AggregatorV3Interface public immutable priceFeed;
 
     /// @notice Keeps track of tokens corresponding to a tokenId
@@ -93,7 +93,19 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     function getLatestPrice() public view returns (int256) {
         (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) = priceFeed
             .latestRoundData();
-        return price; // <== feed return is with 8 or 18 decimals to ensure conversion factor
+        return price; // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
+    }
+
+    function foo() external view returns (uin256) {
+        return getLatestPrice() * 10;
+    }
+
+    function tokenAmount(uint256 amountETH) public view returns (uint256) {
+        //Sent amountETH, how many usd I have
+        uint256 ethUsd = uint256(getLatestPrice());
+        uint256 amountUSD = (amountETH * ethUsd) / 1000000000000000000; //ETH = 18 decimal places
+        uint256 amountToken = amountUSD / tokenPrice / 10000; //2 decimal places
+        return amountToken;
     }
 
     /// @notice The minting rates for USDC token
