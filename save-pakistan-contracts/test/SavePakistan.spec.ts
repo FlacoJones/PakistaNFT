@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { assert, expect } from "chai";
 import { BigNumber, utils } from "ethers";
+import { formatEther, formatUnits } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import { SavePakistan, TreasuryMock, USDCMock, USDTMock } from "../typechain-types";
 
@@ -18,11 +19,12 @@ const TokenVariant = {
 // TODO: Write unit test to test out withdrawing Ether and ERC20 tokens to treasury
 // TODO: Write unit test to assert if the USDC & USDT mint rates are in correct value in USD
 describe("Spec: SavePakistan", () => {
-  const provider = ethers.getDefaultProvider();
+  const provider = ethers.provider;
   let savePakistan: SavePakistan;
   let treasuryMock: TreasuryMock;
   let usdcMock: USDCMock;
   let usdtMock: USDTMock;
+  let wethMock: USDTMock;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -40,12 +42,17 @@ describe("Spec: SavePakistan", () => {
     await treasuryMock.deployed();
 
     // Mock USDC & USDT
-    const [USDCMock, USDTMock] = await Promise.all([
+    const [USDCMock, USDTMock, WETHMock] = await Promise.all([
       ethers.getContractFactory("USDCMock"),
       ethers.getContractFactory("USDTMock"),
+      ethers.getContractFactory("USDTMock"),
     ]);
-    [usdcMock, usdtMock] = await Promise.all([USDCMock.deploy(), USDTMock.deploy()]);
-    await Promise.all([usdcMock.deployed(), usdtMock.deployed()]);
+    [usdcMock, usdtMock, wethMock] = await Promise.all([
+      USDCMock.deploy(),
+      USDTMock.deploy(),
+      WETHMock.deploy(),
+    ]);
+    await Promise.all([usdcMock.deployed(), usdtMock.deployed(), wethMock.deployed()]);
 
     // ERC1155
     const SavePakistan = await ethers.getContractFactory("SavePakistan");
@@ -79,12 +86,12 @@ describe("Spec: SavePakistan", () => {
         savePakistan.USDC_MINT_RATE("5"),
       ]);
       const expectedUsdcMintRates = [
-        utils.parseUnits("30", decimals),
-        utils.parseUnits("100", decimals),
-        utils.parseUnits("10", decimals),
-        utils.parseUnits("65", decimals),
-        utils.parseUnits("0.0035", decimals),
-        utils.parseUnits("25", decimals),
+        utils.parseUnits("30", decimals), // $30
+        utils.parseUnits("100", decimals), // $100
+        utils.parseUnits("10", decimals), // $10
+        utils.parseUnits("65", decimals), // $65
+        utils.parseUnits("0.0035", decimals), // $0.0035
+        utils.parseUnits("25", decimals), // $25
       ];
       console.log(
         "usdcMintRates",
@@ -113,12 +120,12 @@ describe("Spec: SavePakistan", () => {
         savePakistan.USDT_MINT_RATE("5"),
       ]);
       const expectedUsdtMintRates = [
-        utils.parseUnits("30", decimals),
-        utils.parseUnits("100", decimals),
-        utils.parseUnits("10", decimals),
-        utils.parseUnits("65", decimals),
-        utils.parseUnits("0.0035", decimals),
-        utils.parseUnits("25", decimals),
+        utils.parseUnits("30", decimals), // $30
+        utils.parseUnits("100", decimals), // $100
+        utils.parseUnits("10", decimals), // $10
+        utils.parseUnits("65", decimals), // $65
+        utils.parseUnits("0.0035", decimals), // $0.0035
+        utils.parseUnits("25", decimals), // $25
       ];
       console.log(
         "usdtMintRates",
@@ -166,7 +173,165 @@ describe("Spec: SavePakistan", () => {
   });
 
   describe("- mintByPayingToken", () => {
-    it("should mint with quantity 1 and send the correct amount of token", async () => {});
+    before(async () => {
+      let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
+      await tx.wait();
+    });
+
+    it("should mint with quantity 1 and send the correct amount of token", async () => {
+      const usdcMintRate = await savePakistan.USDC_MINT_RATE(TokenVariant.TemporaryShelter);
+      const balanceBN = await usdcMock.balanceOf(user1.address);
+
+      let tx = await usdcMock.connect(user1).approve(savePakistan.address, usdcMintRate);
+      await tx.wait();
+
+      tx = await savePakistan
+        .connect(user1)
+        .mintByPayingToken(TokenVariant.TemporaryShelter, usdcMock.address, BigNumber.from("1"));
+      await tx.wait();
+
+      const currentBalanceBN = await usdcMock.balanceOf(user1.address);
+      console.log("currentBalanceBN", utils.formatUnits(currentBalanceBN, 6));
+
+      expect(currentBalanceBN).to.be.eq(balanceBN.sub(usdcMintRate));
+    });
+
+    it("should mint with quantity 5 and send the correct amount of token", async () => {
+      const usdcMintRate = await savePakistan.USDC_MINT_RATE(TokenVariant.TemporaryShelter);
+      const balanceBN = await usdcMock.balanceOf(user1.address);
+      const quantity = BigNumber.from("5");
+
+      let tx = await usdcMock
+        .connect(user1)
+        .approve(savePakistan.address, usdcMintRate.mul(quantity));
+      await tx.wait();
+
+      tx = await savePakistan
+        .connect(user1)
+        .mintByPayingToken(TokenVariant.TemporaryShelter, usdcMock.address, quantity);
+      await tx.wait();
+
+      const currentBalanceBN = await usdcMock.balanceOf(user1.address);
+      console.log("currentBalanceBN", utils.formatUnits(currentBalanceBN, 6));
+
+      expect(currentBalanceBN).to.be.eq(balanceBN.sub(usdcMintRate.mul(quantity)));
+    });
+
+    it("should revert mint when user has no USDC balance", async () => {
+      const usdcMintRate = await savePakistan.USDC_MINT_RATE(TokenVariant.TemporaryShelter);
+      const quantity = BigNumber.from("5");
+
+      let tx = await usdcMock
+        .connect(user2)
+        .approve(savePakistan.address, usdcMintRate.mul(quantity));
+      await tx.wait();
+
+      await expect(
+        savePakistan
+          .connect(user2)
+          .mintByPayingToken(TokenVariant.TemporaryShelter, usdcMock.address, quantity)
+      ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+    });
+  });
+
+  describe("- withdrawEther", () => {
+    it("should revert when caller is not admin", async () => {
+      await expect(savePakistan.connect(user1).withdrawEther()).to.be.revertedWith(
+        "SavePakistan: Only an Admin can call this function."
+      );
+    });
+
+    it("should withdraw ether to treasury", async () => {
+      const [prevTreasuryBalance, prevSavePakistanBalance] = await Promise.all([
+        provider.getBalance(treasuryMock.address),
+        provider.getBalance(savePakistan.address),
+      ]);
+      console.log("prevTreasuryBalance", formatEther(prevTreasuryBalance));
+      console.log("prevSavePakistanBalance", formatEther(prevSavePakistanBalance));
+
+      await expect(savePakistan.connect(deployer).withdrawEther()).to.be.not.reverted;
+
+      const [curTreasuryBalance, curSavePakistanBalance] = await Promise.all([
+        provider.getBalance(treasuryMock.address),
+        provider.getBalance(savePakistan.address),
+      ]);
+      console.log("curTreasuryBalance", formatEther(curTreasuryBalance));
+      console.log("curSavePakistanBalance", formatEther(curSavePakistanBalance));
+
+      expect(prevTreasuryBalance).to.be.eq(BigNumber.from(0));
+      expect(curSavePakistanBalance).to.be.eq(BigNumber.from(0));
+      expect(curTreasuryBalance).to.be.eq(prevSavePakistanBalance);
+    });
+  });
+
+  describe("- withdrawTokens", () => {
+    it("should revert when caller is not admin", async () => {
+      await expect(savePakistan.connect(user1).withdrawTokens()).to.be.revertedWith(
+        "SavePakistan: Only an Admin can call this function."
+      );
+    });
+
+    it("should withdraw tokens to treasury", async () => {
+      const [
+        prevTreasuryUsdcBalance,
+        prevSavePakistanUsdcBalance,
+        prevTreasuryUsdtBalance,
+        prevSavePakistanUsdtBalance,
+        usdcDecimals,
+        usdtDecimals,
+      ] = await Promise.all([
+        usdcMock.balanceOf(treasuryMock.address),
+        usdcMock.balanceOf(savePakistan.address),
+
+        usdtMock.balanceOf(treasuryMock.address),
+        usdtMock.balanceOf(savePakistan.address),
+
+        usdcMock.decimals(),
+        usdtMock.decimals(),
+      ]);
+      console.log("prevTreasuryUsdcBalance", formatUnits(prevTreasuryUsdcBalance, usdcDecimals));
+      console.log(
+        "prevSavePakistanUsdcBalance",
+        formatUnits(prevSavePakistanUsdcBalance, usdcDecimals)
+      );
+      console.log("prevTreasuryUsdtBalance", formatUnits(prevTreasuryUsdtBalance, usdtDecimals));
+      console.log(
+        "prevSavePakistanUsdtBalance",
+        formatUnits(prevSavePakistanUsdtBalance, usdtDecimals)
+      );
+
+      await expect(savePakistan.connect(deployer).withdrawTokens()).to.be.not.reverted;
+
+      const [
+        curTreasuryUsdcBalance,
+        curSavePakistanUsdcBalance,
+        curTreasuryUsdtBalance,
+        curSavePakistanUsdtBalance,
+      ] = await Promise.all([
+        usdcMock.balanceOf(treasuryMock.address),
+        usdcMock.balanceOf(savePakistan.address),
+
+        usdtMock.balanceOf(treasuryMock.address),
+        usdtMock.balanceOf(savePakistan.address),
+      ]);
+      console.log("curTreasuryUsdcBalance", formatUnits(curTreasuryUsdcBalance, usdcDecimals));
+      console.log(
+        "curSavePakistanUsdcBalance",
+        formatUnits(curSavePakistanUsdcBalance, usdcDecimals)
+      );
+      console.log("curTreasuryUsdtBalance", formatUnits(curTreasuryUsdtBalance, usdtDecimals));
+      console.log(
+        "curSavePakistanUsdtBalance",
+        formatUnits(curSavePakistanUsdtBalance, usdtDecimals)
+      );
+
+      expect(prevTreasuryUsdcBalance).to.be.eq(utils.parseUnits("0", usdcDecimals));
+      expect(prevTreasuryUsdtBalance).to.be.eq(utils.parseUnits("0", usdtDecimals));
+      expect(curTreasuryUsdcBalance).to.be.eq(prevSavePakistanUsdcBalance);
+      expect(curTreasuryUsdtBalance).to.be.eq(prevSavePakistanUsdtBalance);
+      expect(curSavePakistanUsdcBalance).to.be.eq(utils.parseUnits("0", usdcDecimals));
+      expect(curSavePakistanUsdtBalance).to.be.eq(utils.parseUnits("0", usdtDecimals));
+    });
   });
 
   describe("- uri", () => {
