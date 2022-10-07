@@ -80,6 +80,13 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
+  describe.only("ETH/USD Price Feed", () => {
+    it('should return latest price', async () => {
+      const price = await savePakistan.getLatestPrice();
+      expect(price).to.be.eq(132356008734);
+    })
+  })
+
   describe("- USDC_MINT_RATE", () => {
     it("should return the correct mint rates of 6 decimal places", async () => {
       const decimals = 6;
