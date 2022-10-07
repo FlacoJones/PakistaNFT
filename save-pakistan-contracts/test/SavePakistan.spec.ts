@@ -1,7 +1,7 @@
 import { SavePakistan, TreasuryMock, USDCMock, USDTMock } from "../typechain-types";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, constants, utils } from "ethers";
 import { assert, expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -346,8 +346,20 @@ describe("Spec: SavePakistan", () => {
 
   describe("_beforeTokenTransfer", () => {
     it("should not allow token transfers to any arbitrary address", async () => {
-      // ...
-      // savePakistan.safeTransferFrom()
+      const contract = savePakistan.connect(user1);
+
+      const ethPrice = await contract.getVariantEtherMintRate(Variant.RationBag);
+
+      let tx = await contract.mintWithEth(Variant.RationBag, "1", {
+        value: ethPrice,
+      });
+      await tx.wait();
+
+      await expect(
+        contract.safeTransferFrom(user1.address, user2.address, "1", "1", constants.HashZero)
+      ).to.be.revertedWith(
+        "SavePakistan: Not allowed to transfer a token from/to arbitrary address."
+      );
     });
   });
 });
