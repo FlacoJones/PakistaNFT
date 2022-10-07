@@ -191,10 +191,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
             _quantity < getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
         );
-        require(
-            _quantity < getVariantMaxSupply(_variant),
-            "SavePakistan: The requested quantity to purchase is beyond the max supply."
-        );
 
         uint256 rate = getVariantEtherMintRate(_variant);
         uint256 amount = _quantity * rate;
@@ -232,10 +228,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         require(
             _quantity < getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
-        );
-        require(
-            _quantity < getVariantMaxSupply(_variant),
-            "SavePakistan: The requested quantity to purchase is beyond the max supply."
         );
 
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
