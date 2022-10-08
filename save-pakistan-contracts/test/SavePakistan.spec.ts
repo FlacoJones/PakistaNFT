@@ -1,4 +1,4 @@
-import { SavePakistan, TreasuryMock, USDCMock, USDTMock } from "../typechain-types";
+import { SavePakistan, TreasuryMock, USDCMock, USDTMock, MockEthUsdPriceFeed } from "../typechain-types";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, constants, utils } from "ethers";
@@ -23,6 +23,7 @@ describe("Spec: SavePakistan", () => {
   let usdcMock: USDCMock;
   let usdtMock: USDTMock;
   let wethMock: USDTMock;
+  let mockEthUsdPriceFeed: MockEthUsdPriceFeed;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -40,22 +41,24 @@ describe("Spec: SavePakistan", () => {
     await treasuryMock.deployed();
 
     // Mock USDC & USDT
-    const [USDCMock, USDTMock, WETHMock] = await Promise.all([
+    const [USDCMock, USDTMock, WETHMock, MockEthUsdPriceFeed] = await Promise.all([
       ethers.getContractFactory("USDCMock"),
       ethers.getContractFactory("USDTMock"),
       ethers.getContractFactory("USDTMock"),
+      ethers.getContractFactory("MockEthUsdPriceFeed"),
     ]);
-    [usdcMock, usdtMock, wethMock] = await Promise.all([
+    [usdcMock, usdtMock, wethMock, mockEthUsdPriceFeed] = await Promise.all([
       USDCMock.deploy(),
       USDTMock.deploy(),
       WETHMock.deploy(),
+      MockEthUsdPriceFeed.deploy()
     ]);
-    await Promise.all([usdcMock.deployed(), usdtMock.deployed(), wethMock.deployed()]);
+    await Promise.all([usdcMock.deployed(), usdtMock.deployed(), wethMock.deployed(), mockEthUsdPriceFeed.deployed()]);
 
     // ERC1155
     const SavePakistan = await ethers.getContractFactory("SavePakistan");
     savePakistan = <SavePakistan>(
-      await SavePakistan.deploy(treasuryMock.address, usdcMock.address, usdtMock.address, baseURI)
+      await SavePakistan.deploy(treasuryMock.address, usdcMock.address, usdtMock.address, mockEthUsdPriceFeed.address, baseURI)
     );
     await savePakistan.deployed();
 
@@ -64,13 +67,44 @@ describe("Spec: SavePakistan", () => {
     console.log("savePakistan contract initial etherBalance", utils.formatEther(etherBalance));
   });
 
-  // TODO: When the mocking or Oracle has been setup, should write unit test for it
-  describe("- ETHER_MINT_RATE", () => {
-    it("should query ETHER_MINT_RATE", async () => {
-      const ETHER_MINT_RATE = await savePakistan.ETHER_MINT_RATE("0");
-      console.log("ETHER_MINT_RATE", utils.formatEther(ETHER_MINT_RATE));
-    });
-  });
+  describe("ETH/USD Price Feed", () => {
+    it('should return latest price', async () => {
+      const price = await savePakistan.getLatestPrice();
+      expect(price).to.be.eq(132356008734);
+    })
+
+    describe.only('getVariantEtherMintRate', () => {
+      it('should return correct wei price for RationBag', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.RationBag);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('22675736961451247'));
+      })
+
+      it('should return correct wei price for TemporaryShelter', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.TemporaryShelter);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('75585789871504157'));
+      })
+
+      it('should return correct wei price for HygieneKit', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.HygieneKit);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('7558578987150415'));
+      })
+
+      it('should return correct wei price for PortableToilets', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.PortableToilets);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('49130763416477702'));
+      })
+
+      it('should return correct wei price for Water', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.Water);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('2267573696145124'));
+      })
+
+      it('should return correct wei price for WaterWheel', async () => {
+        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.WaterWheel);
+        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('18896447467876039'));
+      })
+    })
+  })
 
   describe("- USDC_MINT_RATE", () => {
     it("should return the correct mint rates of 6 decimal places", async () => {
@@ -144,7 +178,7 @@ describe("Spec: SavePakistan", () => {
     it("should mint when quantity is 1 and sends correct amount of ether", async () => {
       const contract = savePakistan.connect(user1);
 
-      const etherMintRate = await contract.getVariantEtherMintRate(BigNumber.from("0"));
+      const etherMintRate = await contract.getVariantEtherMintRate(BigNumber.from("3"));
       const quantity = BigNumber.from("1");
       const msgValue = etherMintRate.mul(quantity);
 

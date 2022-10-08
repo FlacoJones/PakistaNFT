@@ -10,6 +10,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
 /// @title SavePakistan
 ///
 /// is an initiative being co-ordinated by individuals
@@ -47,9 +49,9 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
     address public immutable usdtAddr;
 
-    /// @notice The Chainlink Price Oracle address
-    /// @dev See https://optimistic.etherscan.io/address/0x13e3Ee699D1909E989722E753853AE30b17e08c5
-    address public immutable ethUsdOracleAddress;
+    /// @notice The Chainlink ETH/USD Price Oracle address
+    /// @dev See https://optimistic.etherscan.io/address/0x02f5e9e9dcc66ba6392f6904d5fcf8625d9b19c9
+    AggregatorV3Interface public immutable priceFeed;
 
     /// @notice Keeps track of tokens corresponding to a tokenId
     Counters.Counter private _tokenCounter;
@@ -75,19 +77,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @notice Mapping that holds the token variant of a tokenId
     mapping(uint256 => Variant) private _tokenIdToVariant;
 
-    // TODO: Verify with Andrew O'Brien regarding ether mint rates as they change overtime
-    // TODO: Better approach to putting up sale price in Ether
-    /// ? how do we ensure the amount of ether value matches the $ value?
-    /// @notice The minting rates for native ether
-    uint256[6] public ETHER_MINT_RATE = [
-        1 ether, // Ration Bag // ! this is a placeholder value, to be replaced
-        1 ether, // Temporary Shelter // ! this is a placeholder value, to be replaced
-        1 ether, // Hygiene Kit // ! this is a placeholder value, to be replaced
-        1 ether, // Portable Toilets // ! this is a placeholder value, to be replaced
-        1 ether, // Clean and Safe Water // ! this is a placeholder value, to be replaced
-        1 ether // H2O Wheel // ! this is a placeholder value, to be replaced
-    ];
-
     /// @notice The minting rates for USDC token
     uint256[6] public USDC_MINT_RATE = [
         uint256(30_000_000), // Ration Bag
@@ -96,6 +85,17 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256(65_000_000), // Portable Toilets
         uint256(3_500), // Clean and Safe Water
         uint256(25_000_000) // H2O Wheel
+    ];
+
+    /// @notice The minting rates for USD Apache Helicopter backed dollars
+    /// TODO Are these correct?
+    uint256[6] public USD_MINT_RATE = [
+        uint256(30), // Ration Bag
+        uint256(100), // Temporary Shelter
+        uint256(10), // Hygiene Kit
+        uint256(65), // Portable Toilets
+        uint256(3), // Clean and Safe Water
+        uint256(25) // H2O Wheel
     ];
 
     /// @notice The minting rates for USDT token
@@ -127,14 +127,14 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         address _treasuryAddr,
         address _usdcAddr,
         address _usdtAddr,
-        address _ethUsdOracleAddress,
+        address _priceFeed,
         string memory _baseURI
     ) ERC1155("") {
         treasuryAddr = _treasuryAddr;
         usdcAddr = _usdcAddr;
         usdtAddr = _usdtAddr;
+        priceFeed = AggregatorV3Interface(_priceFeed);
         baseURI = _baseURI;
-        ethUsdOracleAddress = _ethUsdOracleAddress;
 
         usdc = IERC20(usdcAddr);
         usdt = IERC20(usdtAddr);
@@ -296,14 +296,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /**
      * @notice Gets the mint rate for a token variant in Ether.
      * @param _variant The token variant corresponds to a real world item.
-     */
-    function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
-        return ETHER_MINT_RATE[uint256(_variant)];
-    }
-
-    /**
-     * @notice Gets the mint rate for a token variant in Ether.
-     * @param _variant The token variant corresponds to a real world item.
      * @param _tokenAddr A supported token to receive payment in contract.
      */
     function getVariantMintRate(Variant _variant, address _tokenAddr) public view returns (uint256) {
@@ -325,6 +317,22 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function getTokenAddrSupported(address _tokenAddr) public view returns (bool) {
         return _tokenAddrToSupported[_tokenAddr];
+    }
+
+    /**
+     * @notice Returns the price of 1 Ether in USD
+     */
+    function getLatestPrice() public view returns (uint256) {
+        (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) = priceFeed
+            .latestRoundData();
+        return uint256(price); // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
+    }
+
+    /**
+     * @notice Returns current token variant price in wei based on the latest Ether/USD price on Chainlink Oracle
+     */
+    function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
+        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / (getLatestPrice() / 10**8);
     }
 
     /**
