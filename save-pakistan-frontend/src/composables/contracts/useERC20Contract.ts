@@ -1,10 +1,12 @@
 import { SignerOrProvider } from '@/types'
-import { ERC20__factory } from '@/types/contracts'
+import { Erc20Util } from '@/utils'
 
-interface IUseERC20Contract {
-  address: string
+interface IUseErc20Contract {
   signerOrProvider: SignerOrProvider
+  address: string
 }
 
-export const useERC20Contract = ({ address, signerOrProvider }: IUseERC20Contract) =>
-  ERC20__factory.connect(address, signerOrProvider)
+export const useErc20Contract = ({ signerOrProvider, address }: IUseErc20Contract) => {
+  const erc20Contract = Erc20Util.GetContract(signerOrProvider, address)
+  return erc20Contract
+}
