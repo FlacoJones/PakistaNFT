@@ -2,13 +2,13 @@ import { providers, Signer } from 'ethers'
 
 export type SignerOrProvider = Signer | providers.BaseProvider
 
-export enum NFTVariant {
-  RATION,
-  MEAL,
-  TENT,
-  HYGIENE_KIT,
-  WATER,
-  WATER_WHEEL,
+export enum SPVariant {
+  RationBag = 0,
+  TemporaryShelter,
+  HygieneKit,
+  PortableToilets,
+  Water,
+  WaterWheel,
 }
 
 export interface Token {
