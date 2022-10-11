@@ -1,4 +1,4 @@
-import { usePakistaNftContract } from '@/composables'
+import { useSavePakistanContract } from '@/composables'
 import { constants } from 'ethers'
 import { useQuery } from 'vue-query'
 
@@ -8,7 +8,7 @@ interface IUseBalanceOf {
 }
 
 export const useBalanceOf = ({ account, tokenType }: IUseBalanceOf) => {
-  const pakistaNftContract = usePakistaNftContract()
+  const pakistaNftContract = useSavePakistanContract()
 
   const query = useQuery(
     ['total-supply-query', pakistaNftContract],

@@ -1,11 +1,11 @@
 import { useSignerOrProvider } from '@/composables'
-import { PAKISTANFT_CONTRACT_ADDRESS } from '@/constants'
+import { SAVE_PAKISTAN_CONTRACT_ADDRESS } from '@/constants'
 import { PakistaNFT__factory } from '@/types/contracts'
 
-export const usePakistaNftContract = () => {
+export const useSavePakistanContract = () => {
   const signerOrProvider = useSignerOrProvider()
   const pakistaNftContract = PakistaNFT__factory.connect(
-    PAKISTANFT_CONTRACT_ADDRESS,
+    SAVE_PAKISTAN_CONTRACT_ADDRESS,
     signerOrProvider
   )
   return pakistaNftContract

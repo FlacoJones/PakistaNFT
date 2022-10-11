@@ -1,4 +1,4 @@
-import { usePakistaNftContract } from '@/composables'
+import { useSavePakistanContract } from '@/composables'
 import { BigNumber } from 'ethers'
 import { useMutation } from 'vue-query'
 import { NFTVariant, Token } from '@/types'
@@ -9,7 +9,7 @@ interface IUseMint {
 }
 
 export const useEthMint = () => {
-  const pakistaNftContract = usePakistaNftContract()
+  const pakistaNftContract = useSavePakistanContract()
 
   const mutation = useMutation(
     async ({ nftVariant, amount }: IUseMint) => {
@@ -30,7 +30,7 @@ export const useEthMint = () => {
 }
 
 export const useUsdcMint = () => {
-  const pakistaNftContract = usePakistaNftContract()
+  const pakistaNftContract = useSavePakistanContract()
 
   const mutation = useMutation(
     async ({ nftVariant, amount }: IUseMint) => {
