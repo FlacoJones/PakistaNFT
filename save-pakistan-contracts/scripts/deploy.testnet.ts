@@ -36,12 +36,19 @@ async function main() {
   nonce = await deployer.getTransactionCount();
   console.log("usdtMock", usdtMock.address);
 
+  const MockEthUsdPriceFeed = await ethers.getContractFactory("MockEthUsdPriceFeed");
+  const mockEthUsdPriceFeed = await MockEthUsdPriceFeed.deploy({ nonce });
+  await mockEthUsdPriceFeed.deployed();
+  nonce = await deployer.getTransactionCount();
+  console.log("mockEthUsdPriceFeed", mockEthUsdPriceFeed.address);
+
   // ERC1155
   const SavePakistan = await ethers.getContractFactory("SavePakistan");
   const savePakistan = <SavePakistan>await SavePakistan.deploy(
     treasuryMock.address,
     usdcMock.address,
     usdtMock.address,
+    mockEthUsdPriceFeed.address,
     baseURI,
     {
       nonce,
