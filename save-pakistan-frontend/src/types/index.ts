@@ -3,7 +3,7 @@ import { providers, Signer } from 'ethers'
 export type SignerOrProvider = Signer | providers.BaseProvider
 
 export enum SPVariant {
-  RationBag = 0,
+  RationBag,
   TemporaryShelter,
   HygieneKit,
   PortableToilets,

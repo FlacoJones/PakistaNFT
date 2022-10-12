@@ -30,13 +30,15 @@ export class SavePakistanUtil {
   ) => {
     const savePakistanContract = this.GetContract(contractAddress, provider)
     const variantToTotalSupply: { [variant in SPVariant]?: number } = {}
-    await Promise.all([
-      Object.values(SPVariant).forEach(async (variant) => {
-        const totalSupplyBN = await savePakistanContract.totalSupply(variant)
-        const totalSupply = totalSupplyBN.toNumber()
-        variantToTotalSupply[Number(variant) as SPVariant] = totalSupply
-      }),
-    ])
+    await Promise.all(
+      Object.keys(SPVariant)
+        .slice(0, Object.keys(SPVariant).length / 2)
+        .map(async (_, variant) => {
+          const totalSupplyBN = await savePakistanContract.totalSupply(variant)
+          const totalSupply = totalSupplyBN.toNumber()
+          variantToTotalSupply[variant as SPVariant] = totalSupply
+        })
+    )
     return variantToTotalSupply
   }
 
