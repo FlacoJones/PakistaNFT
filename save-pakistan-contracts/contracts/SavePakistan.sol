@@ -9,8 +9,7 @@ import {AccessControl, IAccessControl} from "@openzeppelin/contracts/access/Acce
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
-
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /// @title SavePakistan
 ///
@@ -53,9 +52,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @dev See https://optimistic.etherscan.io/address/0x02f5e9e9dcc66ba6392f6904d5fcf8625d9b19c9
     AggregatorV3Interface public immutable priceFeed;
 
-    /// @notice Keeps track of tokens corresponding to a tokenId
-    Counters.Counter private _tokenCounter;
-
     /// @notice Interface for USDC
     IERC20 private immutable usdc;
 
@@ -70,12 +66,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
     /// @notice Mapping that holds the max supply allocation for each token variant
     mapping(Variant => uint256) private _variantToMaxSupply;
-
-    /// @notice Mapping that holds the minting count for each token variant
-    mapping(Variant => uint256) private _variantToMintCount;
-
-    /// @notice Mapping that holds the token variant of a tokenId
-    mapping(uint256 => Variant) private _tokenIdToVariant;
 
     /// @notice The minting rates for USDC token
     uint256[6] public USDC_MINT_RATE = [
@@ -108,14 +98,13 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256(25_000_000_000_000_000_000) // H2O Wheel
     ];
 
-    event MintWithEth(Variant indexed Variant, address indexed minter, uint256 quantity, uint256 tokenId);
+    event MintWithEth(Variant indexed Variant, address indexed minter, uint256 quantity);
     event MintWithToken(
         Variant indexed Variant,
         address indexed minter,
         uint256 quantity,
         uint256 amount,
-        address tokenAddr,
-        uint256 tokenId
+        address tokenAddr
     );
 
     modifier onlyAdmin() {
@@ -206,15 +195,9 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         (bool sent, bytes memory data) = payable(address(this)).call{value: msg.value}("");
         require(sent, "SavePakistan: Failed to send Ether.");
 
-        _tokenCounter.increment();
-        uint256 tokenId = _tokenCounter.current();
+        _mint(msg.sender, uint256(_variant), _quantity, "");
 
-        _variantToMintCount[_variant] += _quantity;
-        _tokenIdToVariant[tokenId] = _variant;
-
-        _mint(msg.sender, tokenId, _quantity, "");
-
-        emit MintWithEth(_variant, msg.sender, _quantity, tokenId);
+        emit MintWithEth(_variant, msg.sender, _quantity);
     }
 
     /**
@@ -243,15 +226,9 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
         IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), amount);
 
-        _tokenCounter.increment();
-        uint256 tokenId = _tokenCounter.current();
+        _mint(msg.sender, uint256(_variant), _quantity, "");
 
-        _variantToMintCount[_variant] += _quantity;
-        _tokenIdToVariant[tokenId] = _variant;
-
-        _mint(msg.sender, tokenId, _quantity, "");
-
-        emit MintWithToken(_variant, msg.sender, _quantity, amount, _tokenAddr, tokenId);
+        emit MintWithToken(_variant, msg.sender, _quantity, amount, _tokenAddr);
     }
 
     /**
@@ -270,19 +247,11 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     }
 
     /**
-     * @notice Gets the supply minted for a token variant.
-     * @param _variant The token variant corresponds to a real world item.
-     */
-    function getVariantSupply(Variant _variant) public view returns (uint256) {
-        return _variantToMintCount[_variant];
-    }
-
-    /**
      * @notice Gets the remaining supply for a token variant.
      * @param _variant The token variant corresponds to a real world item.
      */
     function getVariantRemainingSupply(Variant _variant) public view returns (uint256) {
-        return getVariantMaxSupply(_variant) - _variantToMintCount[_variant];
+        return getVariantMaxSupply(_variant) - totalSupply(uint256(_variant));
     }
 
     /**
@@ -349,8 +318,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @dev See {ERC1155-uri}.
      */
     function uri(uint256 _tokenId) public view override returns (string memory) {
-        Variant variant = _tokenIdToVariant[_tokenId];
-        string memory tokenURI = Strings.toString(uint256(variant));
+        string memory tokenURI = Strings.toString(uint256(Variant(_tokenId)));
         return string(abi.encodePacked(baseURI, tokenURI, ".json"));
     }
 

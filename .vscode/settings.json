@@ -27,13 +27,13 @@
     "@eth-optimism/=save-pakistan-contracts/node_modules/@eth-optimism/",
     "erc721a-upgradeable/=save-pakistan-contracts/node_modules/erc721a-upgradeable/",
     "hardhat/=save-pakistan-contracts/node_modules/hardhat/",
-    "erc1155diamondstorage/=save-pakistan-contracts/node_modules/erc1155diamondstorage/"
+    "@chainlink/=save-pakistan-contracts/node_modules/@chainlink/"
   ],
   "solidity.remappings": [
     "@openzeppelin/=save-pakistan-contracts/node_modules/@openzeppelin/",
     "@eth-optimism/=save-pakistan-contracts/node_modules/@eth-optimism/",
     "erc721a-upgradeable/=save-pakistan-contracts/node_modules/erc721a-upgradeable/",
     "hardhat/=save-pakistan-contracts/node_modules/hardhat/",
-    "erc1155diamondstorage/=save-pakistan-contracts/node_modules/erc1155diamondstorage/"
+    "@chainlink/=save-pakistan-contracts/node_modules/@chainlink/"
   ],
 }

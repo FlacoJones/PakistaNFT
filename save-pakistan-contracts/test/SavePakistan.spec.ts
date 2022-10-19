@@ -1,4 +1,10 @@
-import { SavePakistan, TreasuryMock, USDCMock, USDTMock, MockEthUsdPriceFeed } from "../typechain-types";
+import {
+  SavePakistan,
+  TreasuryMock,
+  USDCMock,
+  USDTMock,
+  MockEthUsdPriceFeed,
+} from "../typechain-types";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, constants, utils } from "ethers";
@@ -51,14 +57,25 @@ describe("Spec: SavePakistan", () => {
       USDCMock.deploy(),
       USDTMock.deploy(),
       WETHMock.deploy(),
-      MockEthUsdPriceFeed.deploy()
+      MockEthUsdPriceFeed.deploy(),
     ]);
-    await Promise.all([usdcMock.deployed(), usdtMock.deployed(), wethMock.deployed(), mockEthUsdPriceFeed.deployed()]);
+    await Promise.all([
+      usdcMock.deployed(),
+      usdtMock.deployed(),
+      wethMock.deployed(),
+      mockEthUsdPriceFeed.deployed(),
+    ]);
 
     // ERC1155
     const SavePakistan = await ethers.getContractFactory("SavePakistan");
     savePakistan = <SavePakistan>(
-      await SavePakistan.deploy(treasuryMock.address, usdcMock.address, usdtMock.address, mockEthUsdPriceFeed.address, baseURI)
+      await SavePakistan.deploy(
+        treasuryMock.address,
+        usdcMock.address,
+        usdtMock.address,
+        mockEthUsdPriceFeed.address,
+        baseURI
+      )
     );
     await savePakistan.deployed();
 
@@ -67,46 +84,50 @@ describe("Spec: SavePakistan", () => {
     console.log("savePakistan contract initial etherBalance", utils.formatEther(etherBalance));
   });
 
-  describe("ETH/USD Price Feed", () => {
-    it('should return latest price', async () => {
+  describe("> getLatestPrice", () => {
+    it("should return latest price", async () => {
       const price = await savePakistan.getLatestPrice();
       expect(price).to.be.eq(132356008734);
-    })
+    });
+  });
 
-    describe.only('getVariantEtherMintRate', () => {
-      it('should return correct wei price for RationBag', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.RationBag);
-        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('22675736961451247'));
-      })
+  describe("> getVariantEtherMintRate", () => {
+    it("should return correct wei price for RationBag", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.RationBag);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("22675736961451247"));
+    });
 
-      it('should return correct wei price for TemporaryShelter', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.TemporaryShelter);
-        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('75585789871504157'));
-      })
+    it("should return correct wei price for TemporaryShelter", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(
+        Variant.TemporaryShelter
+      );
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("75585789871504157"));
+    });
 
-      it('should return correct wei price for HygieneKit', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.HygieneKit);
-        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('7558578987150415'));
-      })
+    it("should return correct wei price for HygieneKit", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.HygieneKit);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("7558578987150415"));
+    });
 
-      it('should return correct wei price for PortableToilets', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.PortableToilets);
-        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('49130763416477702'));
-      })
+    it("should return correct wei price for PortableToilets", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(
+        Variant.PortableToilets
+      );
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("49130763416477702"));
+    });
 
-      it('should return correct wei price for Water', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.Water);
-        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('2267573696145124'));
-      })
+    it("should return correct wei price for Water", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.Water);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("2267573696145124"));
+    });
 
-      it('should return correct wei price for WaterWheel', async () => {
-        const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.WaterWheel);
-        expect(rationBagEtherPrice).to.be.eq(BigNumber.from('18896447467876039'));
-      })
-    })
-  })
+    it("should return correct wei price for WaterWheel", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.WaterWheel);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("18896447467876039"));
+    });
+  });
 
-  describe("- USDC_MINT_RATE", () => {
+  describe("> USDC_MINT_RATE", () => {
     it("should return the correct mint rates of 6 decimal places", async () => {
       const decimals = 6;
       const usdcMintRates = await Promise.all([
@@ -140,7 +161,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- USDT_MINT_RATE", () => {
+  describe("> USDT_MINT_RATE", () => {
     it("should return the correct mint rates of 18 decimal places", async () => {
       const decimals = 18;
       const usdtMintRates = await Promise.all([
@@ -174,7 +195,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- mintWithEth", () => {
+  describe("> mintWithEth", () => {
     it("should mint when quantity is 1 and sends correct amount of ether", async () => {
       const contract = savePakistan.connect(user1);
 
@@ -204,7 +225,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- mintWithToken", () => {
+  describe("> mintWithToken", () => {
     it("should revert when given token address is not supported", async () => {
       const contract = savePakistan.connect(user1);
 
@@ -304,7 +325,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- withdrawEther", () => {
+  describe("> withdrawEther", () => {
     it("should revert when caller is not admin", async () => {
       await expect(savePakistan.connect(user1).withdrawEther()).to.be.revertedWith(
         "SavePakistan: Only an Admin can call this function."
@@ -334,7 +355,7 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- withdrawTokens", () => {
+  describe("> withdrawTokens", () => {
     it("should revert when caller is not admin", async () => {
       await expect(savePakistan.connect(user1).withdrawTokens()).to.be.revertedWith(
         "SavePakistan: Only an Admin can call this function."
@@ -410,14 +431,14 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("- uri", () => {
+  describe("> uri", () => {
     it("should return token URIs for specified tokens", async () => {
       const tokenURIs = await Promise.all([savePakistan.uri("1"), savePakistan.uri("2")]);
       console.log("tokenURIs", tokenURIs);
     });
   });
 
-  describe("- _beforeTokenTransfer", () => {
+  describe("> _beforeTokenTransfer", () => {
     it("should not allow token transfers to any arbitrary address", async () => {
       const contract = savePakistan.connect(user1);
 
@@ -434,20 +455,5 @@ describe("Spec: SavePakistan", () => {
         "SavePakistan: Not allowed to transfer a token from/to arbitrary address."
       );
     });
-  });
-
-  // ! no burn() function exposed in the contract
-  describe("- _burn", () => {
-    // it("should not allow token burning", async () => {
-    //   const contract = savePakistan.connect(user1);
-    //   const ethPrice = await contract.getVariantEtherMintRate(Variant.RationBag);
-    //   let tx = await contract.mintWithEth(Variant.RationBag, "1", {
-    //     value: ethPrice,
-    //   });
-    //   await tx.wait();
-    //   await expect(
-    //     contract.burn(user1.address, user2.address, "1", "1", constants.HashZero)
-    //   ).to.be.revertedWith("SavePakistan: Not allowed to burn a token.");
-    // });
   });
 });
