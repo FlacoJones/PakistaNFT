@@ -11,15 +11,14 @@ const info = computed(() => SP_VARIANT_INFO[props.variant])
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col p-6 gap-3 hover:bg-green-50 cursor-pointer rounded-md">
-    <div class="flex gap-4">
-      <img
-        src="https://uxwing.com/wp-content/themes/uxwing/download/household-and-furniture/food-bag-icon.png"
-        class="h-20"
-      />
-      <span class="text-xl font-bold leading-6">{{ info.title }}</span>
+  <div
+    class="flex flex-1 flex-col px-4 py-6 xl:p-6 gap-3 hover:bg-green-50 cursor-pointer rounded-xl"
+  >
+    <div class="flex gap-3 xl:gap-4">
+      <img :src="info.imgSrc" class="h-16 xl:h-20" />
+      <span class="text-lg xl:text-xl font-bold leading-5 xl:leading-6">{{ info.title }}</span>
     </div>
-    <div>{{ info.desc }}</div>
+    <div class="text-sm xl:text-md leading-4 xl:leading-5">{{ info.desc }}</div>
     <div class="flex gap-2 items-center">
       <div class="px-2 bg-green-400 font-bold text-lg text-white rounded-sm">${{ info.price }}</div>
       <div v-if="info.subdesc" class="text-xs">{{ info.subdesc }}</div>

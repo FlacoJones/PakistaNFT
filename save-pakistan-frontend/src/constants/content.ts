@@ -7,13 +7,15 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     price: 30,
     subdesc: 'Serves 7-8 people',
     variant: SPVariant.RationBag,
+    imgSrc: './img/ration.png',
   },
   [SPVariant.PortableToilets]: {
-    title: '1000 Eco-Friendly Portable Toilets',
+    title: '1,000 Eco-Friendly Portable Toilets',
     desc: 'An environment-friendly and locally-sourced materials such as bamboo sticks.',
     price: 65,
     subdesc: 'Serves at least 5 families',
     variant: SPVariant.PortableToilets,
+    imgSrc: './img/toilet.png',
   },
   [SPVariant.HygieneKit]: {
     title: '5,000 Hygiene Kits',
@@ -21,6 +23,7 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     price: 10,
     subdesc: 'Serves 7-8 people',
     variant: SPVariant.HygieneKit,
+    imgSrc: './img/hygiene.png',
   },
   [SPVariant.Water]: {
     title: '5 Million Liters',
@@ -28,6 +31,7 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     price: 3.5,
     subdesc: 'Per 1,000 Liters',
     variant: SPVariant.Water,
+    imgSrc: './img/water.png',
   },
   [SPVariant.TemporaryShelter]: {
     title: '1,000 Temporary Shelters',
@@ -35,6 +39,7 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     price: 100,
     subdesc: 'Serves 1 family or 6-7 people',
     variant: SPVariant.TemporaryShelter,
+    imgSrc: './img/shelter.png',
   },
   [SPVariant.WaterWheel]: {
     title: '5,000 Help-2-Others (H2O) Wheels',
@@ -42,5 +47,6 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     price: 25,
     subdesc: '',
     variant: SPVariant.WaterWheel,
+    imgSrc: './img/water-wheel.png',
   },
 }

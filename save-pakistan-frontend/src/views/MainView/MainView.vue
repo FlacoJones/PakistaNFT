@@ -8,7 +8,6 @@ import VariantsSection from './components/VariantsSection.vue'
 import DonateSection from './components/DonateSection.vue'
 
 import ConnectWalletModal from '@/components/ConnectWalletModal.vue'
-import ConnectWalletButton from '@/components/ConnectWalletButton.vue'
 
 const selectedVariant = ref<SPVariant | null>(null)
 const selectVariant = (variant: SPVariant) => {
@@ -28,13 +27,13 @@ const closeConnectButtonModal = () => {
 </script>
 
 <template>
-  <div class="flex h-screen w-screen">
+  <div class="flex h-screen w-full xl:w-screen flex-col xl:flex-row gap-10 xl:gap-0 scroll-smooth">
     <!-- Hero section -->
     <HeroSection />
 
     <!-- Donation variants section -->
     <VariantsSection
-      :class="[selectedVariant !== null ? 'w-2/5' : 'flex-1']"
+      :class="[selectedVariant !== null ? 'xl:w-2/5' : 'flex-1']"
       :on-variant-select="selectVariant"
     />
 
