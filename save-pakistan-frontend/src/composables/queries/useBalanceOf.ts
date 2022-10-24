@@ -1,4 +1,3 @@
-import { useSavePakistanContract } from '@/composables'
 import { useQuery } from 'vue-query'
 import { SPVariant } from '@/types'
 import { SavePakistanUtil } from '@/utils'

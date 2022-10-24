@@ -2,11 +2,11 @@ import { SignerOrProvider } from '@/types'
 import { Erc20Util } from '@/utils'
 
 interface IUseErc20Contract {
-  signerOrProvider: SignerOrProvider
   address: string
+  signerOrProvider: SignerOrProvider
 }
 
-export const useErc20Contract = ({ signerOrProvider, address }: IUseErc20Contract) => {
-  const erc20Contract = Erc20Util.GetContract(signerOrProvider, address)
+export const useErc20Contract = ({ address, signerOrProvider }: IUseErc20Contract) => {
+  const erc20Contract = Erc20Util.GetContract(address, signerOrProvider)
   return erc20Contract
 }
