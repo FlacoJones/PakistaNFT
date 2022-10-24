@@ -1,7 +1,8 @@
-import { providers, Signer } from 'ethers'
+import { providers, Signer, utils } from 'ethers'
 import { SavePakistan, SavePakistan__factory } from '@/types/contracts'
 import { SPVariant, Token } from '@/types'
 import { DEFAULT_CHAIN, SAVE_PAKISTAN_CONTRACT_ADDRESS } from '@/constants'
+import { Erc20Util } from './Erc20Util'
 
 export class SavePakistanUtil {
   public static GetContract = (
@@ -54,6 +55,39 @@ export class SavePakistanUtil {
     return balance
   }
 
+  public static GetUSDCAddress = async (
+    contractAddress?: string | undefined,
+    provider?: providers.BaseProvider | Signer | undefined
+  ) => {
+    const savePakistanContract = this.GetContract(contractAddress, provider)
+    const usdcAddress = await savePakistanContract.usdcAddr()
+    return usdcAddress
+  }
+
+  public static GetUSDTAddress = async (
+    contractAddress?: string | undefined,
+    provider?: providers.BaseProvider | Signer | undefined
+  ) => {
+    const savePakistanContract = this.GetContract(contractAddress, provider)
+    const usdtAddress = await savePakistanContract.usdtAddr()
+    return usdtAddress
+  }
+
+  public static GetVariantMintRate = async (
+    variant: SPVariant,
+    token: string,
+    contractAddress?: string | undefined,
+    provider?: providers.BaseProvider | Signer | undefined
+  ) => {
+    const savePakistanContract = this.GetContract(contractAddress, provider)
+    const [rateBN, decimals] = await Promise.all([
+      savePakistanContract.getVariantMintRate(variant, token),
+      Erc20Util.GetDecimals(token, provider),
+    ])
+    const rate = Number(utils.formatUnits(rateBN, decimals))
+    return rate
+  }
+
   public static MintWithEth = async (
     variant: SPVariant,
     quantity: number,
@@ -70,16 +104,18 @@ export class SavePakistanUtil {
   }
 
   public static MintWithToken = async (
-    token: Token,
     variant: SPVariant,
+    token: string,
     quantity: number,
     signer: Signer,
     contractAddress?: string | undefined
   ) => {
     const savePakistanContract = this.GetContract(contractAddress, signer)
-    const tx = await savePakistanContract.mintWithToken(variant, token.address, quantity, {
+    console.log(savePakistanContract)
+    const tx = await savePakistanContract.mintWithToken(variant, token, quantity, {
       gasLimit: 200_000,
     })
+    console.log(tx)
     return tx
   }
 }

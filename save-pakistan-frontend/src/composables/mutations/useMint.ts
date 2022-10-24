@@ -40,7 +40,12 @@ export const useMintWithToken = () => {
       if (!signer.value) {
         return
       }
-      const tx = await SavePakistanUtil.MintWithToken(token, variant, quantity, signer.value)
+      const tx = await SavePakistanUtil.MintWithToken(
+        variant,
+        token.address,
+        quantity,
+        signer.value
+      )
       return tx
     },
     {

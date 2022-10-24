@@ -16,29 +16,45 @@ export class Erc20Util {
   public static GetAllowance = async (
     owner: string,
     spender: string,
-    token: Token,
+    token: string,
     provider?: providers.BaseProvider | Signer | undefined
   ) => {
-    const erc20Contract = this.GetContract(token.address, provider)
-    const allowanceBN = await erc20Contract.allowance(owner, spender)
-    const allowance = Number(utils.formatUnits(allowanceBN, token.decimals))
+    const erc20Contract = this.GetContract(token, provider)
+    const [allowanceBN, decimals] = await Promise.all([
+      erc20Contract.allowance(owner, spender),
+      erc20Contract.decimals(),
+    ])
+    const allowance = Number(utils.formatUnits(allowanceBN, decimals))
     return allowance
   }
 
   public static GetBalanceOf = async (
     account: string,
-    token: Token,
+    token: string,
     provider?: providers.BaseProvider | Signer | undefined
   ) => {
-    const erc20Contract = this.GetContract(token.address, provider)
-    const balanceBN = await erc20Contract.balanceOf(account)
-    const balance = Number(utils.formatUnits(balanceBN, token.decimals))
+    const erc20Contract = this.GetContract(token, provider)
+    const [balanceBN, decimals] = await Promise.all([
+      erc20Contract.balanceOf(account),
+      erc20Contract.decimals(),
+    ])
+    const balance = Number(utils.formatUnits(balanceBN, decimals))
     return balance
   }
 
-  public static Approve = async (spender: string, value: string, token: Token, signer: Signer) => {
-    const erc20Contract = this.GetContract(token.address, signer)
-    const valueBN = utils.parseUnits(value, token.decimals)
+  public static GetDecimals = async (
+    token: string,
+    provider?: providers.BaseProvider | Signer | undefined
+  ) => {
+    const erc20Contract = this.GetContract(token, provider)
+    const decimals = erc20Contract.decimals()
+    return decimals
+  }
+
+  public static Approve = async (spender: string, value: string, token: string, signer: Signer) => {
+    const erc20Contract = this.GetContract(token, signer)
+    const decimals = await erc20Contract.decimals()
+    const valueBN = utils.parseUnits(value, decimals)
     const tx = await erc20Contract.approve(spender, valueBN, { gasLimit: 200_000 })
     return tx
   }

@@ -17,7 +17,7 @@ export const useApprove = () => {
       if (!signer.value) {
         return
       }
-      const tx = await Erc20Util.Approve(spender, value, token, signer.value)
+      const tx = await Erc20Util.Approve(spender, value, token.address, signer.value)
       return tx
     },
     {

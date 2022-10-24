@@ -11,6 +11,15 @@ export enum SPVariant {
   WaterWheel,
 }
 
+export interface SPVariantInfo {
+  title: string
+  desc: string
+  price: number
+  subdesc?: string | undefined
+  variant: SPVariant
+  imgSrc?: string | undefined
+}
+
 export interface Token {
   address: string
   symbol: string

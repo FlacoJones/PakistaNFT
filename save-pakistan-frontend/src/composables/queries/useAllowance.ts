@@ -12,7 +12,7 @@ export const useAllowance = ({ token, owner, spender }: IUseAllowance) => {
   const query = useQuery(
     ['allowance-query', token, owner, spender],
     async () => {
-      const allowance = await Erc20Util.GetAllowance(owner, spender, token)
+      const allowance = await Erc20Util.GetAllowance(owner, spender, token.address)
       return allowance
     },
     {

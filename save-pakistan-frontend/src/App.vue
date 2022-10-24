@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import GmWeb3 from './components/GmWeb3.vue'
+import MainView from './views/MainView/MainView.vue'
 </script>
 
 <template>
-  <GmWeb3 />
+  <MainView />
 </template>

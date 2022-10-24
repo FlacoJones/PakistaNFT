@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useEthMint } from '@/composables/useMint'
+import { useMintWithEth } from '@/composables'
 import { useAccount } from 'vagmi'
-import { NFTVariant } from '@/types'
+import { SPVariant } from '@/types'
 
 import ConnectWalletModal from './ConnectWalletModal.vue'
 import ConnectWalletButton from './ConnectWalletButton.vue'
@@ -12,7 +12,7 @@ import { ref } from 'vue'
  * vagmi
  */
 const { address: account } = useAccount()
-const { mutate: ethMint } = useEthMint()
+const { mutate: mintWithEth } = useMintWithEth()
 
 /**
  * connect wallet
@@ -29,7 +29,7 @@ const closeConnectButtonModal = () => {
  * mint tests
  */
 const handleMintButtonClick = () => {
-  ethMint({ nftVariant: NFTVariant.MEAL, amount: 2 })
+  mintWithEth({ variant: SPVariant.RationBag, quantity: 2 })
 }
 </script>
 
