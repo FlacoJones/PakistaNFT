@@ -27,7 +27,9 @@ const closeConnectButtonModal = () => {
 </script>
 
 <template>
-  <div class="flex h-screen w-full xl:w-screen flex-col xl:flex-row gap-10 xl:gap-0 scroll-smooth">
+  <div
+    class="flex h-screen w-full xl:w-screen flex-col xl:flex-row gap-10 xl:gap-0 scroll-smooth font-clash"
+  >
     <!-- Hero section -->
     <HeroSection />
 

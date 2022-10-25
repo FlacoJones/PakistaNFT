@@ -11,7 +11,7 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
   },
   [SPVariant.PortableToilets]: {
     title: '1,000 Eco-Friendly Portable Toilets',
-    desc: 'An environment-friendly and locally-sourced materials such as bamboo sticks.',
+    desc: 'An environment-friendly and locally-sourced materials such as bamboo sticks',
     price: 65,
     subdesc: 'Serves at least 5 families',
     variant: SPVariant.PortableToilets,

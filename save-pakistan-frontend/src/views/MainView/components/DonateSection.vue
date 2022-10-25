@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SPVariant } from '@/types'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { SP_VARIANT_INFO } from '@/constants'
 
 const props = defineProps<{
@@ -10,6 +10,14 @@ const props = defineProps<{
 
 const variantInfo = computed(() => SP_VARIANT_INFO[props.variant])
 const quantity = ref(1)
+const totalPrice = computed(() => variantInfo.value.price * quantity.value)
+
+watch(
+  () => props.variant,
+  () => {
+    quantity.value = 1
+  }
+)
 </script>
 
 <template>
@@ -54,7 +62,7 @@ const quantity = ref(1)
       </div>
 
       <button class="font-bold text-3xl bg-white p-4 rounded-lg w-full" @click="onMintButtonClick">
-        Donate
+        Donate ${{ totalPrice }}
       </button>
     </div>
   </div>
