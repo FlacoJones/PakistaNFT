@@ -1,8 +1,12 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { SPVariant } from '@/types'
 
-export const useStore = defineStore('exampleStore', () => {
-  const wagmi = ref(true)
+export const useStore = defineStore('MainStore', () => {
+  const selectedVariant = ref<SPVariant | undefined>()
+  const setSelectedVariant = (variant: SPVariant) => {
+    selectedVariant.value = variant
+  }
 
-  return { wagmi }
+  return { selectedVariant, setSelectedVariant }
 })

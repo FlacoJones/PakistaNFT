@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS, TESTNET_CHAIN } from '@/constants'
+import { SAVE_PAKISTAN_CONTRACT_ADDRESS, TESTNET_CHAIN } from '@/constants'
 import { providers, Wallet } from 'ethers'
 import { SavePakistanUtil } from './SavePakistanUtil'
 import { SPVariant } from '@/types'
@@ -16,14 +16,14 @@ describe('SavePakistanUtil', () => {
     SavePakistanUtil.GetBalanceOf(
       MaxSchnaider,
       SPVariant.RationBag,
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS,
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
       provider
     )
 
   const fetchRationBagTotalSupply = () =>
     SavePakistanUtil.GetTotalSupplyForVariant(
       SPVariant.RationBag,
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS,
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
       provider
     )
 
@@ -31,16 +31,16 @@ describe('SavePakistanUtil', () => {
     SavePakistanUtil.GetVariantMintRate(
       SPVariant.RationBag,
       usdtAddress,
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS,
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
       provider
     )
 
   it('should return correct SP contract instance', async () => {
     const savePakistanContract = SavePakistanUtil.GetContract(
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS,
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
       provider
     )
-    expect(savePakistanContract.address).toBe(SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS)
+    expect(savePakistanContract.address).toBe(SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id])
     expect(await savePakistanContract.symbol()).toBe('SP')
   })
 
@@ -52,7 +52,7 @@ describe('SavePakistanUtil', () => {
 
   it('should return total supply for all variants', async () => {
     const variantToTotalSupply = await SavePakistanUtil.GetTotalSupplyForAllVariants(
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS,
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
       provider
     )
     expect(Object.keys(variantToTotalSupply).length).toBe(Object.keys(SPVariant).length / 2)
@@ -81,7 +81,7 @@ describe('SavePakistanUtil', () => {
       SPVariant.RationBag,
       quantity,
       signer,
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id]
     )
 
     const receipt = await mintTx.wait()
@@ -107,7 +107,7 @@ describe('SavePakistanUtil', () => {
       usdtAddress,
       quantity,
       signer,
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id]
     )
 
     const receipt = await mintTx.wait()
@@ -130,7 +130,7 @@ describe('SavePakistanUtil', () => {
     const amount = (rate * quantity).toString()
 
     // const approveTx = await Erc20Util.Approve(
-    //   SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS,
+    //   SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
     //   amount,
     //   usdtAddress,
     //   signer
@@ -142,7 +142,7 @@ describe('SavePakistanUtil', () => {
       usdtAddress,
       quantity,
       signer,
-      SAVE_PAKISTAN_TESTNET_CONTRACT_ADDRESS
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id]
     )
 
     const receipt = await mintTx.wait()

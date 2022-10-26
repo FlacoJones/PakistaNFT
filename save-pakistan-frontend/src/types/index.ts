@@ -21,9 +21,9 @@ export interface SPVariantInfo {
 }
 
 export interface Token {
-  address: string
+  address?: string | undefined
   symbol: string
-  decimals: number
+  decimals?: number | undefined
   name?: string | undefined
   logoURI?: string | undefined
 }

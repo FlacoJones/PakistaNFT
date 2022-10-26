@@ -4,13 +4,13 @@
 
 @font-face {
   font-family: 'Clash Display Variable';
-  src: url('fonts/clash-display-variable.ttf') format('truetype');
+  src: url('/fonts/clash-display-variable.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Clash Display Variable';
-  src: url('fonts/clash-display-variable.ttf') format('truetype');
+  src: url('/fonts/clash-display-variable.ttf') format('truetype');
   font-weight: bold;
   font-style: normal;
 }
@@ -19,5 +19,8 @@
   html {
     font-family: 'Clash Display Variable', system-ui, sans-serif;
     word-spacing: 4px;
+  }
+  button {
+    word-spacing: 8px;
   }
 }

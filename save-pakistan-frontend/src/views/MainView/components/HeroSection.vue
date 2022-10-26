@@ -5,7 +5,7 @@
     <div class="flex flex-col w-full h-full space-y-8 justify-between items-start p-10">
       <div class="flex w-full justify-between">
         <a href="https://tayaba.org/" target="_blank" class="hover:scale-105 duration-200">
-          <img src="img/save-pakistan.svg" class="h-20" />
+          <img src="/img/save-pakistan.svg" class="h-20" />
         </a>
         <a
           href="https://tayaba.org/"
@@ -14,10 +14,11 @@
           >About Us
         </a>
       </div>
-      <div class="space-y-10">
+      <div>
         <p class="uppercase text-green-300 font-bold text-7xl shadow-sm">Mint is live now</p>
         <p class="text-white text-3xl tracking-wider">Crypto Fund for Pakistan Flood Relief</p>
       </div>
+      <div />
       <div />
     </div>
   </div>

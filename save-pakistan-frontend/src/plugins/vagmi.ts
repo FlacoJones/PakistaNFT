@@ -1,9 +1,12 @@
 import { configureChains, chain, createClient, VagmiPlugin } from 'vagmi'
-import { publicProvider } from 'vagmi/providers/public'
+import { alchemyProvider } from 'vagmi/providers/alchemy'
 import { InjectedConnector } from 'vagmi/connectors/injected'
 import { WalletConnectConnector } from 'vagmi/connectors/walletConnect'
 
-const { chains, provider } = configureChains([chain.optimism], [publicProvider()])
+const { chains, provider } = configureChains(
+  [chain.optimism, chain.goerli],
+  [alchemyProvider({ alchemyId: 'kWZ8YJZFfStiHTBmEFzVkID9KKrKI8ZD' })]
+)
 
 const connectors = [
   new InjectedConnector({ chains }),

@@ -14,7 +14,7 @@ export const useApprove = () => {
 
   const mutation = useMutation(
     async ({ token, spender, value }: IUseApprove) => {
-      if (!signer.value) {
+      if (!signer.value || !token.address) {
         return
       }
       const tx = await Erc20Util.Approve(spender, value, token.address, signer.value)

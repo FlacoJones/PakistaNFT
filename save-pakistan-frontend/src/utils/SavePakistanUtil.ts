@@ -10,7 +10,7 @@ export class SavePakistanUtil {
     signerOrProvider?: Signer | providers.BaseProvider | undefined
   ): SavePakistan =>
     SavePakistan__factory.connect(
-      address ?? SAVE_PAKISTAN_CONTRACT_ADDRESS,
+      address ?? SAVE_PAKISTAN_CONTRACT_ADDRESS[DEFAULT_CHAIN.id],
       signerOrProvider ?? providers.getDefaultProvider(DEFAULT_CHAIN.id)
     )
 

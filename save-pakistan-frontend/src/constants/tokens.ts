@@ -1,36 +1,46 @@
 import { Token } from '@/types'
 import { DEFAULT_CHAIN, TESTNET_CHAIN } from '@/constants'
 
+export const ETH: Token = {
+  symbol: 'ETH',
+  logoURI: '/img/eth.svg',
+}
+
 export const USDC: { [chainId: number]: Token } = {
   [DEFAULT_CHAIN.id]: {
     symbol: 'USDC',
-    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
     decimals: 6,
     name: 'USD Coin',
-    logoURI: '',
+    logoURI: '/img/usdc.svg',
   },
   [TESTNET_CHAIN.id]: {
     symbol: 'USDC',
     address: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
     decimals: 6,
     name: 'USD Coin',
-    logoURI: '',
+    logoURI: '/img/usdc.svg',
   },
 }
 
 export const USDT: { [chainId: number]: Token } = {
   [DEFAULT_CHAIN.id]: {
     symbol: 'USDT',
-    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    address: '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
     decimals: 18,
     name: 'Tether USD',
-    logoURI: '',
+    logoURI: '/img/usdt.svg',
   },
   [TESTNET_CHAIN.id]: {
     symbol: 'USDT',
     address: '0xe802376580c10fE23F027e1E19Ed9D54d4C9311e',
     decimals: 18,
     name: 'Tether USD',
-    logoURI: '',
+    logoURI: '/img/usdt.svg',
   },
+}
+
+export const TOKENS: { [chainId: number]: Token[] } = {
+  [DEFAULT_CHAIN.id]: [ETH, USDC[DEFAULT_CHAIN.id], USDT[DEFAULT_CHAIN.id]],
+  [TESTNET_CHAIN.id]: [ETH, USDC[TESTNET_CHAIN.id], USDT[TESTNET_CHAIN.id]],
 }
