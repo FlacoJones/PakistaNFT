@@ -332,6 +332,28 @@ describe("Spec: SavePakistan", () => {
       expect(currentBalanceBN).to.be.eq(balanceBN.sub(usdcMintRate));
     });
 
+    it.only("should use the Optimism mint rate when token address is the Optimism Token address", async () => {
+      console.log()
+      let tx = await oPMock.mintTo(user1.address, utils.parseUnits("100000000000000000000", 18));
+      await tx.wait();
+
+      const optimismMintRate = await savePakistan.getVariantOptimismMintRate(Variant.TemporaryShelter);
+      const balanceBN = await oPMock.balanceOf(user1.address);
+
+      tx = await oPMock.connect(user1).approve(savePakistan.address, optimismMintRate);
+      await tx.wait();
+
+      tx = await savePakistan
+        .connect(user1)
+        .mintWithToken(Variant.TemporaryShelter, oPMock.address, BigNumber.from("1"));
+      await tx.wait();
+
+      const currentBalanceBN = await oPMock.balanceOf(user1.address);
+      console.log("currentBalanceBN", utils.formatUnits(currentBalanceBN, 18));
+
+      expect(currentBalanceBN).to.be.eq(balanceBN.sub(optimismMintRate));
+    });
+
     it("should mint with quantity 5 and send the correct amount of token", async () => {
       let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
       await tx.wait();

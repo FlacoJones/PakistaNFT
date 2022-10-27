@@ -327,7 +327,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function getLatestOptimismPrice() public view returns (uint256) {
         (, int256 price, , , ) = opPriceFeed.latestRoundData();
-        return uint256(price); // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
+        return uint256(price);
     }
 
     /**
