@@ -3,7 +3,9 @@ import {
   TreasuryMock,
   USDCMock,
   USDTMock,
+  OPMock,
   MockEthUsdPriceFeed,
+  MockOpUsdPriceFeed
 } from "../typechain-types";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
@@ -28,8 +30,9 @@ describe("Spec: SavePakistan", () => {
   let treasuryMock: TreasuryMock;
   let usdcMock: USDCMock;
   let usdtMock: USDTMock;
-  let wethMock: USDTMock;
+  let oPMock: OPMock;
   let mockEthUsdPriceFeed: MockEthUsdPriceFeed;
+  let mockOpUsdPriceFeed: MockOpUsdPriceFeed;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -47,23 +50,28 @@ describe("Spec: SavePakistan", () => {
     await treasuryMock.deployed();
 
     // Mock USDC & USDT
-    const [USDCMock, USDTMock, WETHMock, MockEthUsdPriceFeed] = await Promise.all([
+    const [USDCMock, USDTMock, OPMock, MockEthUsdPriceFeed, MockOpUsdPriceFeed] = await Promise.all([
       ethers.getContractFactory("USDCMock"),
       ethers.getContractFactory("USDTMock"),
-      ethers.getContractFactory("USDTMock"),
+      ethers.getContractFactory("OPMock"),
       ethers.getContractFactory("MockEthUsdPriceFeed"),
+      ethers.getContractFactory("MockOpUsdPriceFeed"),
     ]);
-    [usdcMock, usdtMock, wethMock, mockEthUsdPriceFeed] = await Promise.all([
+
+    [usdcMock, usdtMock, oPMock, mockEthUsdPriceFeed, mockOpUsdPriceFeed] = await Promise.all([
       USDCMock.deploy(),
       USDTMock.deploy(),
-      WETHMock.deploy(),
+      OPMock.deploy(),
       MockEthUsdPriceFeed.deploy(),
+      MockOpUsdPriceFeed.deploy()
     ]);
+
     await Promise.all([
       usdcMock.deployed(),
       usdtMock.deployed(),
-      wethMock.deployed(),
+      oPMock.deployed(),
       mockEthUsdPriceFeed.deployed(),
+      mockOpUsdPriceFeed.deployed()
     ]);
 
     // ERC1155
@@ -73,7 +81,9 @@ describe("Spec: SavePakistan", () => {
         treasuryMock.address,
         usdcMock.address,
         usdtMock.address,
+        oPMock.address,
         mockEthUsdPriceFeed.address,
+        mockOpUsdPriceFeed.address,
         baseURI
       )
     );
@@ -124,6 +134,42 @@ describe("Spec: SavePakistan", () => {
     it("should return correct wei price for WaterWheel", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.WaterWheel);
       expect(rationBagEtherPrice).to.be.eq(BigNumber.from("18896447467876039"));
+    });
+  });
+
+  describe("> getVariantOptimismMintRate", () => {
+    it("should return correct wei price for RationBag", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.RationBag);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("30000000000000000000"));
+    });
+
+    it("should return correct wei price for TemporaryShelter", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(
+        Variant.TemporaryShelter
+      );
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("100000000000000000000"));
+    });
+
+    it("should return correct wei price for HygieneKit", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.HygieneKit);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("10000000000000000000"));
+    });
+
+    it("should return correct wei price for PortableToilets", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(
+        Variant.PortableToilets
+      );
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("65000000000000000000"));
+    });
+
+    it("should return correct wei price for Water", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.Water);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("3000000000000000000"));
+    });
+
+    it("should return correct wei price for WaterWheel", async () => {
+      const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.WaterWheel);
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("25000000000000000000"));
     });
   });
 
@@ -230,7 +276,7 @@ describe("Spec: SavePakistan", () => {
       const contract = savePakistan.connect(user1);
 
       await expect(
-        contract.mintWithToken(Variant.HygieneKit, wethMock.address, "1")
+        contract.mintWithToken(Variant.HygieneKit, ethers.constants.AddressZero, "1")
       ).to.be.revertedWith("SavePakistan: This token is not supported.");
     });
 

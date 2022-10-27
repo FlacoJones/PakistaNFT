@@ -2,6 +2,7 @@
   "name": "@save-pakistan/contracts",
   "private": true,
   "version": "0.0.0",
+  "license": "MIT",
   "scripts": {
     "postinstall": "hardhat compile",
     "deploy:mainnet": "hardhat run scripts/deploy.mainnet.ts --network optimismEthereum",

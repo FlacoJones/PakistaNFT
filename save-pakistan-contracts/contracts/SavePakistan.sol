@@ -48,8 +48,16 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
     address public immutable usdtAddr;
 
+    /// @notice The Optimism token address
+    /// @dev See https://optimistic.etherscan.io/token/0x4200000000000000000000000000000000000042
+    address public immutable optimismTokenAddr;
+
+    /// @notice The Chainlink OP/USD Price Oracle address
+    /// @dev See https://optimistic.etherscan.io/address/0x0D276FC14719f9292D5C1eA2198673d1f4269246
+    AggregatorV3Interface public immutable opPriceFeed;
+
     /// @notice The Chainlink ETH/USD Price Oracle address
-    /// @dev See https://optimistic.etherscan.io/address/0x02f5e9e9dcc66ba6392f6904d5fcf8625d9b19c9
+    /// @dev See https://optimistic.etherscan.io/address/0x13e3Ee699D1909E989722E753853AE30b17e08c5
     AggregatorV3Interface public immutable priceFeed;
 
     /// @notice Interface for USDC
@@ -57,6 +65,9 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
 
     /// @notice Interface for USDT
     IERC20 private immutable usdt;
+
+    /// @notice Interface for Optimism Token
+    IERC20 private immutable op;
 
     /// @notice The mapping that holds the supported tokens that this contract will receive
     mapping(address => bool) private _tokenAddrToSupported;
@@ -116,17 +127,22 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         address _treasuryAddr,
         address _usdcAddr,
         address _usdtAddr,
+        address _optimismTokenAddr,
         address _priceFeed,
+        address _opPriceFeed,
         string memory _baseURI
     ) ERC1155("") {
         treasuryAddr = _treasuryAddr;
         usdcAddr = _usdcAddr;
         usdtAddr = _usdtAddr;
+        optimismTokenAddr = _optimismTokenAddr;
         priceFeed = AggregatorV3Interface(_priceFeed);
+        opPriceFeed = AggregatorV3Interface(_opPriceFeed);
         baseURI = _baseURI;
 
         usdc = IERC20(usdcAddr);
         usdt = IERC20(usdtAddr);
+        op = IERC20(optimismTokenAddr);
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, treasuryAddr);
@@ -134,6 +150,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         // defining the supported tokens
         _tokenAddrToSupported[usdcAddr] = true;
         _tokenAddrToSupported[usdtAddr] = true;
+        _tokenAddrToSupported[optimismTokenAddr] = true;
 
         // supported token rates
         _tokenAddrToRates[usdcAddr] = USDC_MINT_RATE;
@@ -232,6 +249,25 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     }
 
     /**
+     * @notice Mints a token by purchasing using ERC20 token.
+     * @param _variant Identifies the type of token to mint.
+     * @param _quantity The quantity of tokens to be minted.
+     *
+     * Emits {MintWithToken} event.
+     */
+    function mintWithOpToken(Variant _variant, uint256 _quantity) external nonReentrant {
+        uint256 rate = getVariantOptimismMintRate(_variant);
+        uint256 amount = _quantity * rate;
+        require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
+
+        IERC20(optimismTokenAddr).safeTransferFrom(msg.sender, address(this), amount);
+
+        _mint(msg.sender, uint256(_variant), _quantity, "");
+
+        emit MintWithToken(_variant, msg.sender, _quantity, amount, optimismTokenAddr);
+    }
+
+    /**
      * @dev Returns the name of the token.
      */
     function name() public view virtual returns (string memory) {
@@ -292,8 +328,15 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @notice Returns the price of 1 Ether in USD
      */
     function getLatestPrice() public view returns (uint256) {
-        (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) = priceFeed
-            .latestRoundData();
+        (, int256 price, , , ) = priceFeed.latestRoundData();
+        return uint256(price); // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
+    }
+
+    /**
+     * @notice Returns the price of 1 OP Token in USD
+     */
+    function getLatestOptimismPrice() public view returns (uint256) {
+        (, int256 price, , , ) = opPriceFeed.latestRoundData();
         return uint256(price); // <== 12 digits, 8 decimals, e.g. 132356008734 -> $1323.56008734
     }
 
@@ -302,6 +345,13 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
         return (USD_MINT_RATE[uint256(_variant)] * 10**18) / (getLatestPrice() / 10**8);
+    }
+
+    /**
+     * @notice Returns current token variant price in wei based on the latest Optimism/USD price on Chainlink Oracle
+     */
+    function getVariantOptimismMintRate(Variant _variant) public view returns (uint256) {
+        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / (getLatestOptimismPrice() / 10**8);
     }
 
     /**
