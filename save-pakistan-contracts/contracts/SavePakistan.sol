@@ -189,6 +189,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     function withdrawTokens() external onlyAdmin {
         usdc.safeTransfer(treasuryAddr, usdc.balanceOf(address(this)));
         usdt.safeTransfer(treasuryAddr, usdt.balanceOf(address(this)));
+        op.safeTransfer(treasuryAddr, op.balanceOf(address(this)));
     }
 
     /**
