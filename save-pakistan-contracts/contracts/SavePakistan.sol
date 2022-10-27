@@ -179,7 +179,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @notice Withdraws all ether balance to the designated treasury address.
      */
     function withdrawEther() external onlyAdmin {
-        (bool sent, bytes memory data) = payable(address(treasuryAddr)).call{value: address(this).balance}("");
+        (bool sent, ) = payable(address(treasuryAddr)).call{value: address(this).balance}("");
         require(sent, "SavePakistan: Failed to send Ether to treasury.");
     }
 
@@ -209,7 +209,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         require(msg.value >= amount, "SavePakistan: Not enough Ether sent.");
 
         // send ether to treasury
-        (bool sent, bytes memory data) = payable(address(this)).call{value: msg.value}("");
+        (bool sent, ) = payable(address(this)).call{value: msg.value}("");
         require(sent, "SavePakistan: Failed to send Ether.");
 
         _mint(msg.sender, uint256(_variant), _quantity, "");
@@ -237,7 +237,15 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         );
 
         uint256[] memory rates = _tokenAddrToRates[_tokenAddr];
-        uint256 rate = rates[uint256(_variant)];
+
+        uint256 rate = 0;
+
+        if (_tokenAddr == optimismTokenAddr) {
+            rate = getVariantOptimismMintRate(_variant);
+        } else {
+            rate = rates[uint256(_variant)];
+        }
+
         uint256 amount = _quantity * rate;
         require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
 
@@ -246,25 +254,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _mint(msg.sender, uint256(_variant), _quantity, "");
 
         emit MintWithToken(_variant, msg.sender, _quantity, amount, _tokenAddr);
-    }
-
-    /**
-     * @notice Mints a token by purchasing using ERC20 token.
-     * @param _variant Identifies the type of token to mint.
-     * @param _quantity The quantity of tokens to be minted.
-     *
-     * Emits {MintWithToken} event.
-     */
-    function mintWithOpToken(Variant _variant, uint256 _quantity) external nonReentrant {
-        uint256 rate = getVariantOptimismMintRate(_variant);
-        uint256 amount = _quantity * rate;
-        require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
-
-        IERC20(optimismTokenAddr).safeTransferFrom(msg.sender, address(this), amount);
-
-        _mint(msg.sender, uint256(_variant), _quantity, "");
-
-        emit MintWithToken(_variant, msg.sender, _quantity, amount, optimismTokenAddr);
     }
 
     /**
