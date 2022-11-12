@@ -98,7 +98,7 @@ export class SavePakistanUtil {
     const ethMintRate = await savePakistanContract.getVariantEtherMintRate(variant)
     const tx = await savePakistanContract.mintWithEth(variant, quantity, {
       value: ethMintRate.mul(quantity),
-      gasLimit: 200_000,
+      gasLimit: 4_000_000,
     })
     return tx
   }
@@ -111,11 +111,9 @@ export class SavePakistanUtil {
     contractAddress?: string | undefined
   ) => {
     const savePakistanContract = this.GetContract(contractAddress, signer)
-    console.log(savePakistanContract)
     const tx = await savePakistanContract.mintWithToken(variant, token, quantity, {
-      gasLimit: 200_000,
+      gasLimit: 4_000_000,
     })
-    console.log(tx)
     return tx
   }
 }

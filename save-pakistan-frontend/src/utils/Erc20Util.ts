@@ -1,6 +1,5 @@
 import { providers, Signer, utils } from 'ethers'
 import { ERC20, ERC20__factory } from '@/types/contracts'
-import { Token } from '@/types'
 import { DEFAULT_CHAIN } from '@/constants'
 
 export class Erc20Util {
@@ -55,7 +54,7 @@ export class Erc20Util {
     const erc20Contract = this.GetContract(token, signer)
     const decimals = await erc20Contract.decimals()
     const valueBN = utils.parseUnits(value, decimals)
-    const tx = await erc20Contract.approve(spender, valueBN, { gasLimit: 200_000 })
+    const tx = await erc20Contract.approve(spender, valueBN, { gasLimit: 4_000_000 })
     return tx
   }
 }
