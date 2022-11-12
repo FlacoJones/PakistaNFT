@@ -208,8 +208,8 @@ useWaitForTransaction({
                 </div>
               </button>
 
-              <div v-if="!!balance" class="text-right leading-4 text-sm">
-                Balance: {{ balance?.formatted.substring(0, 6) }}
+              <div class="text-right leading-4 text-sm">
+                Balance: {{ balance?.formatted.substring(0, 6) ?? '0.0' }}
                 {{ selectedToken.symbol }}
               </div>
             </div>
