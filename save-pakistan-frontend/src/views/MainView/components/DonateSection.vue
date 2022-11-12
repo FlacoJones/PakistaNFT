@@ -15,6 +15,7 @@ import { useMintWithEth, useMintWithToken } from '@/composables'
 import { Token } from '@/types'
 
 import ConnectWalletModal from '@/components/ConnectWalletModal.vue'
+import TxSubmittedModal from '@/components/TxSubmittedModal.vue'
 import ChevronDownIcon from '@/components/icons/ChevronDownIcon.vue'
 
 /**
@@ -59,7 +60,7 @@ const { address, isConnected } = useAccount()
 /**
  * tokens
  */
-const tokens = computed(() => TOKENS[chain?.value?.id ?? 0])
+const tokens = computed(() => TOKENS[chain?.value?.id ?? DEFAULT_CHAIN.id])
 const selectedToken = ref<Token>(ETH)
 
 const isTokenListShown = ref(false)
@@ -102,11 +103,24 @@ watch([selectedVariant], () => {
 /**
  * mint
  */
-const { mutate: mintWithEth, data: mintWithEthTx } = useMintWithEth()
-const { mutate: mintWithToken, data: mintWithTokenTx } = useMintWithToken()
+const {
+  mutate: mintWithEth,
+  data: mintWithEthTx,
+  isLoading: isSigningMintWithEth,
+  reset: resetMintWithEthTx,
+} = useMintWithEth()
+
+const {
+  mutate: mintWithToken,
+  data: mintWithTokenTx,
+  isLoading: isSigningMintWithToken,
+  reset: resetMintWithTokenTx,
+} = useMintWithToken()
 
 const mint = () => {
-  if (!selectedVariant.value) return
+  if (!selectedVariant.value) {
+    return
+  }
   if (!selectedToken.value.address) {
     mintWithEth({
       variant: selectedVariant.value,
@@ -121,9 +135,16 @@ const mint = () => {
   }
 }
 
-useWaitForTransaction({
-  hash: mintWithEthTx.value?.hash ?? mintWithTokenTx.value?.hash,
-  wait: mintWithEthTx.value?.wait ?? mintWithTokenTx.value?.wait,
+const mintTx = computed(() => mintWithEthTx.value || mintWithTokenTx.value)
+
+const resetTx = () => {
+  resetMintWithEthTx()
+  resetMintWithTokenTx()
+}
+
+const { isLoading: isLoadingMint } = useWaitForTransaction({
+  hash: mintTx.value?.hash,
+  wait: mintTx.value?.wait,
   onSuccess: (receipt) => {
     console.log(receipt)
   },
@@ -131,10 +152,22 @@ useWaitForTransaction({
     console.error(error)
   },
 })
+
+const isMinting = computed(
+  () =>
+    isSigningMintWithEth.value ||
+    isSigningMintWithToken.value ||
+    (isLoadingMint.value && !!mintTx.value)
+)
+
+const isTxSubmittedModalOpen = computed(() => !mintTx.value)
+const onTxSubmittedModalClose = () => {
+  resetTx()
+}
 </script>
 
 <template>
-  <div v-if="selectedVariant !== undefined" id="donate" class="flex-1">
+  <div v-if="!!selectedVariant" id="donate" class="flex-1">
     <div
       class="flex flex-col w-full h-full xl:overflow-auto bg-green-300 px-8 py-14 lg:px-10 lg:py-20 text-cyan-900 gap-14 lg:gap-20 items-center"
     >
@@ -163,14 +196,14 @@ useWaitForTransaction({
           class="bg-white h-full w-20 rounded-lg cursor-pointer outline-none"
           @click="quantity > 1 ? (quantity -= 1) : undefined"
         >
-          <span class="m-auto text-2xl font-bold">−</span>
+          <span class="m-auto text-3xl font-bold">−</span>
         </button>
         <input
           class="outline-none focus:outline-none text-center h-full w-full bg-transparent font-bold text-5xl md:text-basecursor-default items-center pointer-events-none"
           :value="quantity"
         />
         <button class="bg-white h-full w-20 rounded-lg cursor-pointer" @click="quantity += 1">
-          <span class="m-auto text-2xl font-bold">+</span>
+          <span class="m-auto text-3xl font-bold">+</span>
         </button>
       </div>
 
@@ -221,7 +254,7 @@ useWaitForTransaction({
               <div
                 v-for="token in tokens"
                 :key="token.symbol"
-                class="text-gray-700 block px-4 py-2 text-sm hover:bg-green-50 rounded-xl"
+                class="text-gray-700 block px-4 py-2 text-md hover:bg-green-50 rounded-xl"
                 @click="selectToken(token)"
               >
                 <div class="flex gap-2 items-center">
@@ -235,10 +268,10 @@ useWaitForTransaction({
           <!-- Mint button -->
           <button
             class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="!isConnected || !isCorrectChain"
+            :disabled="!isConnected || !isCorrectChain || isMinting"
             @click="mint"
           >
-            Donate ${{ totalPrice }}
+            {{ isMinting ? 'Minting...' : `Donate $${totalPrice}` }}
           </button>
         </div>
       </div>
@@ -246,5 +279,10 @@ useWaitForTransaction({
 
     <!-- Modals -->
     <ConnectWalletModal :is-open="isConnectWalletModalOpen" :on-close="closeConnectButtonModal" />
+    <TxSubmittedModal
+      :is-open="isTxSubmittedModalOpen"
+      :on-close="onTxSubmittedModalClose"
+      :tx="mintWithEthTx || mintWithTokenTx"
+    />
   </div>
 </template>
