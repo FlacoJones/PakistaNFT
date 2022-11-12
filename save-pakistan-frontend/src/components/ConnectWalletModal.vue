@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { useAccount, useConnect } from 'vagmi'
+import { useConnect } from 'vagmi'
 import MetamaskIcon from '@/components/icons/MetamaskIcon.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
 import WalletConnectIcon from '@/components/icons/WalletConnectIcon.vue'
@@ -17,7 +17,6 @@ const props = defineProps<{
 /**
  * vagmi
  */
-const { address } = useAccount()
 const { connect, connectors, isConnected } = useConnect()
 
 /**
