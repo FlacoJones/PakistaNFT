@@ -1,7 +1,7 @@
 import { useMutation } from 'vue-query'
 import { SPVariant, Token } from '@/types'
 import { SavePakistanUtil } from '@/utils'
-import { useSigner } from 'vagmi'
+import { fetchSigner } from '@wagmi/core'
 
 interface IMint {
   variant: SPVariant
@@ -9,14 +9,14 @@ interface IMint {
 }
 
 export const useMintWithEth = () => {
-  const { data: signer } = useSigner()
-
   const mutation = useMutation(
     async ({ variant, quantity }: IMint) => {
-      if (!signer.value) {
+      const signer = await fetchSigner()
+      if (!signer) {
         return
       }
-      const tx = await SavePakistanUtil.MintWithEth(variant, quantity, signer.value)
+
+      const tx = await SavePakistanUtil.MintWithEth(variant, quantity, signer)
       return tx
     },
     {
@@ -33,19 +33,14 @@ interface IMintWithToken extends IMint {
 }
 
 export const useMintWithToken = () => {
-  const { data: signer } = useSigner()
-
   const mutation = useMutation(
     async ({ token, variant, quantity }: IMintWithToken) => {
-      if (!signer.value || !token.address) {
+      const signer = await fetchSigner()
+      if (!signer || !token.address) {
         return
       }
-      const tx = await SavePakistanUtil.MintWithToken(
-        variant,
-        token.address,
-        quantity,
-        signer.value
-      )
+
+      const tx = await SavePakistanUtil.MintWithToken(variant, token.address, quantity, signer)
       return tx
     },
     {
