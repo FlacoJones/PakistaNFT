@@ -1,6 +1,6 @@
 import { providers, Signer, utils } from 'ethers'
 import { SavePakistan, SavePakistan__factory } from '@/types/contracts'
-import { SPVariant, Token } from '@/types'
+import { SPVariant } from '@/types'
 import { DEFAULT_CHAIN, SAVE_PAKISTAN_CONTRACT_ADDRESS } from '@/constants'
 import { Erc20Util } from './Erc20Util'
 
@@ -98,7 +98,7 @@ export class SavePakistanUtil {
     const ethMintRate = await savePakistanContract.getVariantEtherMintRate(variant)
     const tx = await savePakistanContract.mintWithEth(variant, quantity, {
       value: ethMintRate.mul(quantity),
-      gasLimit: 4_000_000,
+      gasLimit: 200_000,
     })
     return tx
   }
@@ -112,7 +112,7 @@ export class SavePakistanUtil {
   ) => {
     const savePakistanContract = this.GetContract(contractAddress, signer)
     const tx = await savePakistanContract.mintWithToken(variant, token, quantity, {
-      gasLimit: 4_000_000,
+      gasLimit: 200_000,
     })
     return tx
   }
