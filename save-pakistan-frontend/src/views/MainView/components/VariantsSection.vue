@@ -10,7 +10,7 @@ const { selectedVariant } = storeToRefs(store)
 
 <template>
   <div
-    class="flex flex-col w-full min-h-fit px-2 py-8 md:p-6 xl:p-10 text-cyan-900 xl:overflow-hidden"
+    class="flex flex-col w-full min-h-fit px-2 py-8 md:p-6 xl:p-10 text-cyan-900 overflow-auto"
     :class="[selectedVariant !== undefined ? 'xl:w-2/5' : 'flex-1']"
   >
     <p class="text-2xl font-bold px-4 pb-6">Choose an option:</p>

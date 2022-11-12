@@ -136,7 +136,7 @@ useWaitForTransaction({
 <template>
   <div v-if="selectedVariant !== undefined" id="donate" class="flex-1">
     <div
-      class="flex flex-col w-full h-full bg-green-300 px-8 py-14 lg:p-10 text-cyan-900 gap-14 lg:gap-20 items-center justify-center"
+      class="flex flex-col w-full h-full overflow-auto bg-green-300 px-8 py-14 lg:px-10 lg:py-20 text-cyan-900 gap-14 lg:gap-20 items-center"
     >
       <!-- Variant info -->
       <div class="flex flex-col gap-6 lg:w-4/5">
