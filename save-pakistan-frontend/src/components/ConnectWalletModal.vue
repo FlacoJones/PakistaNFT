@@ -4,6 +4,7 @@ import { useAccount, useConnect } from 'vagmi'
 import MetamaskIcon from '@/components/icons/MetamaskIcon.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
 import WalletConnectIcon from '@/components/icons/WalletConnectIcon.vue'
+import CoinbaseWalletIcon from '@/components/icons/CoinbaseWalletIcon.vue'
 
 /**
  * props
@@ -24,12 +25,14 @@ const { connect, connectors, isConnected } = useConnect()
  */
 const metamask = connectors.value[0]
 const walletConnect = connectors.value[1]
+const coinbaseWallet = connectors.value[2]
 
 /**
  * handlers
  */
 const connectMetamask = () => connect.value(metamask)
 const connectWalletConnect = () => connect.value(walletConnect)
+const connectCoinbaseWallet = () => connect.value(coinbaseWallet)
 
 /**
  * close on connect
@@ -76,7 +79,7 @@ watch([isConnected], () => {
                 @click="connectMetamask"
               >
                 <MetamaskIcon />
-                <span class="flex-1 ml-3 whitespace-nowrap">MetaMask</span>
+                <span class="flex-1 ml-3 whitespace-nowrap">Metamask</span>
                 <span
                   class="inline-flex items-center justify-center px-2 py-0.5 ml-3 text-xs font-medium text-gray-500 bg-gray-200 rounded dark:bg-gray-700 dark:text-gray-400"
                   >Popular</span
@@ -89,7 +92,16 @@ watch([isConnected], () => {
                 @click="connectWalletConnect"
               >
                 <WalletConnectIcon />
-                <span class="flex-1 ml-3 whitespace-nowrap">WalletConnect</span>
+                <span class="flex-1 ml-3 whitespace-nowrap">Wallet Connect</span>
+              </a>
+            </li>
+            <li>
+              <a
+                class="flex items-center p-3 text-base cursor-pointer font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
+                @click="connectCoinbaseWallet"
+              >
+                <CoinbaseWalletIcon />
+                <span class="flex-1 ml-3 whitespace-nowrap">Coinbase Wallet</span>
               </a>
             </li>
           </ul>
