@@ -1,11 +1,11 @@
 import { configureChains, chain, createClient, VagmiPlugin } from 'vagmi'
-import { alchemyProvider } from 'vagmi/providers/alchemy'
+import { infuraProvider } from 'vagmi/providers/infura'
 import { InjectedConnector } from 'vagmi/connectors/injected'
 import { WalletConnectConnector } from 'vagmi/connectors/walletConnect'
 
 const { chains, provider } = configureChains(
   [chain.optimism, chain.goerli],
-  [alchemyProvider({ alchemyId: 'kWZ8YJZFfStiHTBmEFzVkID9KKrKI8ZD' })]
+  [infuraProvider({ infuraId: import.meta.env.VITE_INFURA_API_KEY })]
 )
 
 const connectors = [
