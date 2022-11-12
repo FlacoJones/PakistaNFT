@@ -160,7 +160,7 @@ const isMinting = computed(
     (isLoadingMint.value && !!mintTx.value)
 )
 
-const isTxSubmittedModalOpen = computed(() => !mintTx.value)
+const isTxSubmittedModalOpen = computed(() => !!mintTx.value)
 const onTxSubmittedModalClose = () => {
   resetTx()
 }
