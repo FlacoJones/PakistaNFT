@@ -15,6 +15,7 @@
     "typechain": "rimraf ./src/types/contracts && typechain --target=ethers-v5 **/*/abis/*.json --out-dir=src/types/contracts"
   },
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "axios": "^0.27.2",
     "ethers": "^5.7.1",
     "pinia": "^2.0.22",
@@ -23,7 +24,6 @@
     "vue-query": "^2.0.0-beta.1"
   },
   "devDependencies": {
-    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "@typechain/ethers-v5": "^10.1.0",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
