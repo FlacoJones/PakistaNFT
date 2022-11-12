@@ -40,7 +40,24 @@ export const USDT: { [chainId: number]: Token } = {
   },
 }
 
+export const OP: { [chainId: number]: Token } = {
+  [DEFAULT_CHAIN.id]: {
+    symbol: 'OP',
+    address: '0x4200000000000000000000000000000000000042',
+    decimals: 18,
+    name: 'Optimism',
+    logoURI: '/img/op.svg',
+  },
+  [TESTNET_CHAIN.id]: {
+    symbol: 'OP',
+    address: '0x4200000000000000000000000000000000000042',
+    decimals: 18,
+    name: 'Optimism',
+    logoURI: '/img/op.svg',
+  },
+}
+
 export const TOKENS: { [chainId: number]: Token[] } = {
-  [DEFAULT_CHAIN.id]: [ETH, USDC[DEFAULT_CHAIN.id], USDT[DEFAULT_CHAIN.id]],
-  [TESTNET_CHAIN.id]: [ETH, USDC[TESTNET_CHAIN.id], USDT[TESTNET_CHAIN.id]],
+  [DEFAULT_CHAIN.id]: [ETH, USDC[DEFAULT_CHAIN.id], USDT[DEFAULT_CHAIN.id], OP[DEFAULT_CHAIN.id]],
+  [TESTNET_CHAIN.id]: [ETH, USDC[TESTNET_CHAIN.id], USDT[TESTNET_CHAIN.id], OP[TESTNET_CHAIN.id]],
 }
