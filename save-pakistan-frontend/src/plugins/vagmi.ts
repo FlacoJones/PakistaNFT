@@ -1,6 +1,7 @@
 import { configureChains, createClient, VagmiPlugin } from 'vagmi'
 import { infuraProvider } from 'vagmi/providers/infura'
 import { publicProvider } from 'vagmi/providers/public'
+import { jsonRpcProvider } from 'vagmi/providers/jsonRpc'
 import { InjectedConnector } from 'vagmi/connectors/injected'
 import { WalletConnectConnector } from 'vagmi/connectors/walletConnect'
 import { CoinbaseWalletConnector } from 'vagmi/connectors/coinbaseWallet'
@@ -10,6 +11,11 @@ const infuraId = import.meta.env.VITE_INFURA_ID
 
 const { chains, provider } = configureChains(SUPPORTED_CHAINS, [
   infuraProvider({ infuraId }),
+  jsonRpcProvider({
+    rpc: (chain) => {
+      return { http: chain.rpcUrls.default }
+    },
+  }),
   publicProvider(),
 ])
 
