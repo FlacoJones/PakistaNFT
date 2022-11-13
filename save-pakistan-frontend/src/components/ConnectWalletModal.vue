@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { watch } from 'vue'
 import { useConnect } from 'vagmi'
-import MetamaskIcon from '@/components/icons/MetamaskIcon.vue'
+
 import CloseIcon from '@/components/icons/CloseIcon.vue'
+import MetamaskIcon from '@/components/icons/MetamaskIcon.vue'
+import BraveIcon from '@/components/icons/BraveIcon.vue'
 import WalletConnectIcon from '@/components/icons/WalletConnectIcon.vue'
 import CoinbaseWalletIcon from '@/components/icons/CoinbaseWalletIcon.vue'
 
@@ -23,13 +25,15 @@ const { connect, connectors, isConnected } = useConnect()
  * connectors
  */
 const metamask = connectors.value[0]
-const walletConnect = connectors.value[1]
-const coinbaseWallet = connectors.value[2]
+const brave = connectors.value[1]
+const walletConnect = connectors.value[2]
+const coinbaseWallet = connectors.value[3]
 
 /**
  * handlers
  */
 const connectMetamask = () => connect.value(metamask)
+const connectBrave = () => connect.value(brave)
 const connectWalletConnect = () => connect.value(walletConnect)
 const connectCoinbaseWallet = () => connect.value(coinbaseWallet)
 
@@ -46,7 +50,7 @@ watch([isConnected], () => {
 <template>
   <div
     tabindex="-1"
-    class="flex overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 w-full md:inset-0 h-modal md:h-full justify-center items-center bg-emerald-300/30 backdrop-blur-sm"
+    class="flex overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 w-full md:inset-0 h-modal md:h-full justify-center items-center bg-cyan-700/60 backdrop-blur-sm"
     :class="!isOpen && 'hidden'"
   >
     <div class="relative p-4 w-screen max-w-md h-screen md:h-auto">
@@ -83,6 +87,15 @@ watch([isConnected], () => {
                   class="inline-flex items-center justify-center px-2 py-0.5 ml-3 text-xs font-medium text-gray-500 bg-gray-200 rounded dark:bg-gray-700 dark:text-gray-400"
                   >Popular</span
                 >
+              </a>
+            </li>
+            <li>
+              <a
+                class="flex items-center p-3 text-base cursor-pointer font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
+                @click="connectBrave"
+              >
+                <BraveIcon />
+                <span class="flex-1 ml-3 whitespace-nowrap">Brave</span>
               </a>
             </li>
             <li>

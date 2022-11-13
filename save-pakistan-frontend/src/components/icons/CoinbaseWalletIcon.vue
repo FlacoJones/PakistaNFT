@@ -4,8 +4,8 @@
     role="img"
     aria-label="Coinbase logo"
     viewBox="0 0 16 16"
-    width="16"
-    height="16"
+    width="20"
+    height="20"
     class="cds-iconStyles-iogjozt"
   >
     <title>Coinbase logo</title>

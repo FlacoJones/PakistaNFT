@@ -3,6 +3,7 @@ import { infuraProvider } from 'vagmi/providers/infura'
 import { publicProvider } from 'vagmi/providers/public'
 import { jsonRpcProvider } from 'vagmi/providers/jsonRpc'
 import { InjectedConnector } from 'vagmi/connectors/injected'
+import { MetaMaskConnector } from 'vagmi/connectors/metaMask'
 import { WalletConnectConnector } from 'vagmi/connectors/walletConnect'
 import { CoinbaseWalletConnector } from 'vagmi/connectors/coinbaseWallet'
 import { SUPPORTED_CHAINS } from '@/constants'
@@ -20,6 +21,7 @@ const { chains, provider } = configureChains(SUPPORTED_CHAINS, [
 ])
 
 const connectors = [
+  new MetaMaskConnector({ chains }),
   new InjectedConnector({ chains }),
   new WalletConnectConnector({
     chains,
