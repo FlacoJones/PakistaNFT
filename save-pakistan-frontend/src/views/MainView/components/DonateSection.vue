@@ -167,7 +167,7 @@ const onTxSubmittedModalClose = () => {
 </script>
 
 <template>
-  <div v-if="!!selectedVariant" id="donate" class="flex-1">
+  <div v-if="selectedVariant !== undefined" id="donate" class="flex-1">
     <div
       class="flex flex-col w-full h-full xl:overflow-auto bg-green-300 px-8 py-14 lg:px-10 lg:py-20 text-cyan-900 gap-14 lg:gap-20 items-center shadow-green-300 shadow-2xl"
     >
