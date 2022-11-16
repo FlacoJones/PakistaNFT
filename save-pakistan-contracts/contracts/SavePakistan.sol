@@ -206,15 +206,6 @@ contract SavePakistan is
     receive() external payable {}
 
     /**
-     * @notice Sets new treasury address.
-     * @param _treasuryAddr The new treasury address.
-     */
-    function setTreasuryAddr(address _treasuryAddr) external onlyOwner {
-        emit SetTreasuryAddr(treasuryAddr, _treasuryAddr);
-        treasuryAddr = _treasuryAddr;
-    }
-
-    /**
      * @notice Withdraws all ether balance to the designated treasury address.
      */
     function withdrawEther() external onlyAdmin {
