@@ -332,7 +332,7 @@ describe("Spec: SavePakistan", () => {
       expect(currentBalanceBN).to.be.eq(balanceBN.sub(usdcMintRate));
     });
 
-    it.only("should use the Optimism mint rate when token address is the Optimism Token address", async () => {
+    it("should use the Optimism mint rate when token address is the Optimism Token address", async () => {
       console.log()
       let tx = await oPMock.mintTo(user1.address, utils.parseUnits("100000000000000000000", 18));
       await tx.wait();
