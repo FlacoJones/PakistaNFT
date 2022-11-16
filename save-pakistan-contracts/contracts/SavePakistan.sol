@@ -1,3 +1,5 @@
+/* solhint-disable var-name-mixedcase */
+/* solhint-disable func-param-name-mixedcase */
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
@@ -201,7 +203,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      */
     function mintWithEth(Variant _variant, uint256 _quantity) external payable nonReentrant {
         require(
-            _quantity < getVariantRemainingSupply(_variant),
+            _quantity <= getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
         );
 
@@ -209,7 +211,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256 amount = _quantity * rate;
         require(msg.value >= amount, "SavePakistan: Not enough Ether sent.");
 
-        // send ether to treasury
         (bool sent, ) = payable(address(this)).call{value: msg.value}("");
         require(sent, "SavePakistan: Failed to send Ether.");
 
@@ -233,7 +234,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     ) external nonReentrant {
         require(_tokenAddrToSupported[_tokenAddr], "SavePakistan: This token is not supported.");
         require(
-            _quantity < getVariantRemainingSupply(_variant),
+            _quantity <= getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
         );
 
