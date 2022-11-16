@@ -3,14 +3,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ERC1155, IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC1155Supply} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {AccessControl, IAccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
+import {ERC1155Upgradeable, IERC1155Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import {ERC1155SupplyUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import {AccessControlUpgradeable, IAccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import {CountersUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /// @title SavePakistan
@@ -23,9 +25,16 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
 ///
 /// @author Andrew O'Brien, Carlo Miguel Dy
 /// @notice ERC1155 sale contract
-contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard {
-    using SafeERC20 for IERC20;
-    using Counters for Counters.Counter;
+contract SavePakistan is
+    ERC1155Upgradeable,
+    ERC1155SupplyUpgradeable,
+    PausableUpgradeable,
+    AccessControlUpgradeable,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
     enum Variant {
         RationBag,
@@ -40,36 +49,36 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     string public baseURI;
 
     /// @notice The treasury address for SavePakistan to receive all payments
-    address public immutable treasuryAddr;
+    address public treasuryAddr;
 
     /// @notice The USDC token address
     /// @dev See https://optimistic.etherscan.io/token/0x7f5c764cbc14f9669b88837ca1490cca17c31607
-    address public immutable usdcAddr;
+    address public usdcAddr;
 
     /// @notice The USDT token address
     /// @dev See https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58
-    address public immutable usdtAddr;
+    address public usdtAddr;
 
     /// @notice The Optimism token address
     /// @dev See https://optimistic.etherscan.io/token/0x4200000000000000000000000000000000000042
-    address public immutable optimismTokenAddr;
+    address public optimismTokenAddr;
 
     /// @notice The Chainlink OP/USD Price Oracle address
     /// @dev See https://optimistic.etherscan.io/address/0x0D276FC14719f9292D5C1eA2198673d1f4269246
-    AggregatorV3Interface public immutable opPriceFeed;
+    AggregatorV3Interface public opPriceFeed;
 
     /// @notice The Chainlink ETH/USD Price Oracle address
     /// @dev See https://optimistic.etherscan.io/address/0x13e3Ee699D1909E989722E753853AE30b17e08c5
-    AggregatorV3Interface public immutable priceFeed;
+    AggregatorV3Interface public priceFeed;
 
     /// @notice Interface for USDC
-    IERC20 private immutable usdc;
+    IERC20Upgradeable private usdc;
 
     /// @notice Interface for USDT
-    IERC20 private immutable usdt;
+    IERC20Upgradeable private usdt;
 
     /// @notice Interface for Optimism Token
-    IERC20 private immutable op;
+    IERC20Upgradeable private op;
 
     /// @notice The mapping that holds the supported tokens that this contract will receive
     mapping(address => bool) private _tokenAddrToSupported;
@@ -81,35 +90,13 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     mapping(Variant => uint256) private _variantToMaxSupply;
 
     /// @notice The minting rates for USDC token
-    uint256[6] public USDC_MINT_RATE = [
-        uint256(30_000_000), // Ration Bag
-        uint256(100_000_000), // Temporary Shelter
-        uint256(10_000_000), // Hygiene Kit
-        uint256(65_000_000), // Portable Toilets
-        uint256(3_500), // Clean and Safe Water
-        uint256(25_000_000) // H2O Wheel
-    ];
+    uint256[6] public usdcMintRates;
 
     /// @notice The minting rates for USD Apache Helicopter backed dollars
-    /// TODO Are these correct?
-    uint256[6] public USD_MINT_RATE = [
-        uint256(30), // Ration Bag
-        uint256(100), // Temporary Shelter
-        uint256(10), // Hygiene Kit
-        uint256(65), // Portable Toilets
-        uint256(3), // Clean and Safe Water
-        uint256(25) // H2O Wheel
-    ];
+    uint256[6] public usdMintRates;
 
     /// @notice The minting rates for USDT token
-    uint256[6] public USDT_MINT_RATE = [
-        uint256(30_000_000_000_000_000_000), // Ration Bag
-        uint256(100_000_000_000_000_000_000), // Temporary Shelter
-        uint256(10_000_000_000_000_000_000), // Hygiene Kit
-        uint256(65_000_000_000_000_000_000), // Portable Toilets
-        uint256(3_500_000_000_000_000), // Clean and Safe Water
-        uint256(25_000_000_000_000_000_000) // H2O Wheel
-    ];
+    uint256[6] public usdtMintRates;
 
     event MintWithEth(Variant indexed Variant, address indexed minter, uint256 quantity);
     event MintWithToken(
@@ -119,13 +106,14 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256 amount,
         address tokenAddr
     );
+    event SetTreasuryAddr(address indexed oldTreasuryAddr, address indexed newTreasuryAddr);
 
     modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "SavePakistan: Only an Admin can call this function.");
         _;
     }
 
-    constructor(
+    function initialize(
         address _treasuryAddr,
         address _usdcAddr,
         address _usdtAddr,
@@ -133,7 +121,12 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         address _priceFeed,
         address _opPriceFeed,
         string memory _baseURI
-    ) ERC1155("") {
+    ) public initializer {
+        __ERC1155_init("");
+        __AccessControl_init();
+        __Ownable_init();
+        __Pausable_init();
+
         treasuryAddr = _treasuryAddr;
         usdcAddr = _usdcAddr;
         usdtAddr = _usdtAddr;
@@ -142,9 +135,9 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         opPriceFeed = AggregatorV3Interface(_opPriceFeed);
         baseURI = _baseURI;
 
-        usdc = IERC20(usdcAddr);
-        usdt = IERC20(usdtAddr);
-        op = IERC20(optimismTokenAddr);
+        usdc = IERC20Upgradeable(usdcAddr);
+        usdt = IERC20Upgradeable(usdtAddr);
+        op = IERC20Upgradeable(optimismTokenAddr);
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, treasuryAddr);
@@ -154,9 +147,35 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         _tokenAddrToSupported[usdtAddr] = true;
         _tokenAddrToSupported[optimismTokenAddr] = true;
 
+        // defining the mint rates
+        usdMintRates = [
+            uint256(30), // Ration Bag
+            uint256(100), // Temporary Shelter
+            uint256(10), // Hygiene Kit
+            uint256(65), // Portable Toilets
+            uint256(3), // Clean and Safe Water
+            uint256(25) // H2O Wheel
+        ];
+        usdcMintRates = [
+            uint256(30_000_000), // Ration Bag
+            uint256(100_000_000), // Temporary Shelter
+            uint256(10_000_000), // Hygiene Kit
+            uint256(65_000_000), // Portable Toilets
+            uint256(3_500), // Clean and Safe Water
+            uint256(25_000_000) // H2O Wheel
+        ];
+        usdtMintRates = [
+            uint256(30_000_000_000_000_000_000), // Ration Bag
+            uint256(100_000_000_000_000_000_000), // Temporary Shelter
+            uint256(10_000_000_000_000_000_000), // Hygiene Kit
+            uint256(65_000_000_000_000_000_000), // Portable Toilets
+            uint256(3_500_000_000_000_000), // Clean and Safe Water
+            uint256(25_000_000_000_000_000_000) // H2O Wheel
+        ];
+
         // supported token rates
-        _tokenAddrToRates[usdcAddr] = USDC_MINT_RATE;
-        _tokenAddrToRates[usdtAddr] = USDT_MINT_RATE;
+        _tokenAddrToRates[usdcAddr] = usdcMintRates;
+        _tokenAddrToRates[usdtAddr] = usdtMintRates;
 
         // defining the max supply for each token variants
         _variantToMaxSupply[Variant.RationBag] = uint256(5_000);
@@ -168,9 +187,32 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     }
 
     /**
+     * @dev See {PausableUpgradeable-_pause}.
+     */
+    function pause() external onlyAdmin {
+        _pause();
+    }
+
+    /**
+     * @dev See {PausableUpgradeable-_unpause}.
+     */
+    function unpause() external onlyAdmin {
+        _unpause();
+    }
+
+    /**
      * @notice Function to receive Ether when `msg.data` must be empty
      */
     receive() external payable {}
+
+    /**
+     * @notice Sets new treasury address.
+     * @param _treasuryAddr The new treasury address.
+     */
+    function setTreasuryAddr(address _treasuryAddr) external onlyOwner {
+        emit SetTreasuryAddr(treasuryAddr, _treasuryAddr);
+        treasuryAddr = _treasuryAddr;
+    }
 
     /**
      * @notice Withdraws all ether balance to the designated treasury address.
@@ -196,7 +238,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      *
      * Emits {MintWithEth} event.
      */
-    function mintWithEth(Variant _variant, uint256 _quantity) external payable nonReentrant {
+    function mintWithEth(Variant _variant, uint256 _quantity) external payable nonReentrant whenNotPaused {
         require(
             _quantity <= getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
@@ -226,7 +268,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         Variant _variant,
         address _tokenAddr,
         uint256 _quantity
-    ) external nonReentrant {
+    ) external nonReentrant whenNotPaused {
         require(_tokenAddrToSupported[_tokenAddr], "SavePakistan: This token is not supported.");
         require(
             _quantity <= getVariantRemainingSupply(_variant),
@@ -246,7 +288,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256 amount = _quantity * rate;
         require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
 
-        IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(_tokenAddr).safeTransferFrom(msg.sender, address(this), amount);
 
         _mint(msg.sender, uint256(_variant), _quantity, "");
 
@@ -330,23 +372,29 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @notice Returns current token variant price in wei based on the latest Ether/USD price on Chainlink Oracle
      */
     function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
-        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / (getLatestPrice() / 10**8);
+        return (usdMintRates[uint256(_variant)] * 10**18) / (getLatestPrice() / 10**8);
     }
 
     /**
      * @notice Returns current token variant price in wei based on the latest Optimism/USD price on Chainlink Oracle
      */
     function getVariantOptimismMintRate(Variant _variant) public view returns (uint256) {
-        return (USD_MINT_RATE[uint256(_variant)] * 10**18) / (getLatestOptimismPrice() / 10**8);
+        return (usdMintRates[uint256(_variant)] * 10**18) / (getLatestOptimismPrice() / 10**8);
     }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC1155) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AccessControlUpgradeable, ERC1155Upgradeable)
+        returns (bool)
+    {
         return
-            interfaceId == type(IAccessControl).interfaceId ||
-            interfaceId == type(IERC1155).interfaceId ||
+            interfaceId == type(IAccessControlUpgradeable).interfaceId ||
+            interfaceId == type(IERC1155Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -354,7 +402,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
      * @dev See {ERC1155-uri}.
      */
     function uri(uint256 _tokenId) public view override returns (string memory) {
-        string memory tokenURI = Strings.toString(uint256(Variant(_tokenId)));
+        string memory tokenURI = StringsUpgradeable.toString(uint256(Variant(_tokenId)));
         return string(abi.encodePacked(baseURI, tokenURI, ".json"));
     }
 
@@ -369,7 +417,7 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override(ERC1155, ERC1155Supply) {
+    ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
         if (from != address(0) && to != address(0)) {
             require(false, "SavePakistan: Not allowed to transfer a token from/to arbitrary address.");
         }
