@@ -5,13 +5,13 @@ import {
   USDTMock,
   OPMock,
   MockEthUsdPriceFeed,
-  MockOpUsdPriceFeed
+  MockOpUsdPriceFeed,
 } from "../typechain-types";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, constants, utils } from "ethers";
 import { assert, expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
 // This corresponds to actual values on Enum from `SavePakistan.sol`
 const Variant = {
@@ -50,20 +50,22 @@ describe("Spec: SavePakistan", () => {
     await treasuryMock.deployed();
 
     // Mock USDC & USDT
-    const [USDCMock, USDTMock, OPMock, MockEthUsdPriceFeed, MockOpUsdPriceFeed] = await Promise.all([
-      ethers.getContractFactory("USDCMock"),
-      ethers.getContractFactory("USDTMock"),
-      ethers.getContractFactory("OPMock"),
-      ethers.getContractFactory("MockEthUsdPriceFeed"),
-      ethers.getContractFactory("MockOpUsdPriceFeed"),
-    ]);
+    const [USDCMock, USDTMock, OPMock, MockEthUsdPriceFeed, MockOpUsdPriceFeed] = await Promise.all(
+      [
+        ethers.getContractFactory("USDCMock"),
+        ethers.getContractFactory("USDTMock"),
+        ethers.getContractFactory("OPMock"),
+        ethers.getContractFactory("MockEthUsdPriceFeed"),
+        ethers.getContractFactory("MockOpUsdPriceFeed"),
+      ]
+    );
 
     [usdcMock, usdtMock, oPMock, mockEthUsdPriceFeed, mockOpUsdPriceFeed] = await Promise.all([
       USDCMock.deploy(),
       USDTMock.deploy(),
       OPMock.deploy(),
       MockEthUsdPriceFeed.deploy(),
-      MockOpUsdPriceFeed.deploy()
+      MockOpUsdPriceFeed.deploy(),
     ]);
 
     await Promise.all([
@@ -71,21 +73,21 @@ describe("Spec: SavePakistan", () => {
       usdtMock.deployed(),
       oPMock.deployed(),
       mockEthUsdPriceFeed.deployed(),
-      mockOpUsdPriceFeed.deployed()
+      mockOpUsdPriceFeed.deployed(),
     ]);
 
     // ERC1155
     const SavePakistan = await ethers.getContractFactory("SavePakistan");
     savePakistan = <SavePakistan>(
-      await SavePakistan.deploy(
+      await upgrades.deployProxy(SavePakistan, [
         treasuryMock.address,
         usdcMock.address,
         usdtMock.address,
         oPMock.address,
         mockEthUsdPriceFeed.address,
         mockOpUsdPriceFeed.address,
-        baseURI
-      )
+        baseURI,
+      ])
     );
     await savePakistan.deployed();
 
@@ -173,16 +175,16 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("> USDC_MINT_RATE", () => {
+  describe("> usdcMintRates", () => {
     it("should return the correct mint rates of 6 decimal places", async () => {
       const decimals = 6;
       const usdcMintRates = await Promise.all([
-        savePakistan.USDC_MINT_RATE("0"),
-        savePakistan.USDC_MINT_RATE("1"),
-        savePakistan.USDC_MINT_RATE("2"),
-        savePakistan.USDC_MINT_RATE("3"),
-        savePakistan.USDC_MINT_RATE("4"),
-        savePakistan.USDC_MINT_RATE("5"),
+        savePakistan.usdcMintRates("0"),
+        savePakistan.usdcMintRates("1"),
+        savePakistan.usdcMintRates("2"),
+        savePakistan.usdcMintRates("3"),
+        savePakistan.usdcMintRates("4"),
+        savePakistan.usdcMintRates("5"),
       ]);
       const expectedUsdcMintRates = [
         utils.parseUnits("30", decimals), // $30
@@ -207,16 +209,16 @@ describe("Spec: SavePakistan", () => {
     });
   });
 
-  describe("> USDT_MINT_RATE", () => {
+  describe("> usdtMintRates", () => {
     it("should return the correct mint rates of 18 decimal places", async () => {
       const decimals = 18;
       const usdtMintRates = await Promise.all([
-        savePakistan.USDT_MINT_RATE("0"),
-        savePakistan.USDT_MINT_RATE("1"),
-        savePakistan.USDT_MINT_RATE("2"),
-        savePakistan.USDT_MINT_RATE("3"),
-        savePakistan.USDT_MINT_RATE("4"),
-        savePakistan.USDT_MINT_RATE("5"),
+        savePakistan.usdtMintRates("0"),
+        savePakistan.usdtMintRates("1"),
+        savePakistan.usdtMintRates("2"),
+        savePakistan.usdtMintRates("3"),
+        savePakistan.usdtMintRates("4"),
+        savePakistan.usdtMintRates("5"),
       ]);
       const expectedUsdtMintRates = [
         utils.parseUnits("30", decimals), // $30
@@ -315,7 +317,7 @@ describe("Spec: SavePakistan", () => {
       let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
       await tx.wait();
 
-      const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
+      const usdcMintRate = await savePakistan.usdcMintRates(Variant.TemporaryShelter);
       const balanceBN = await usdcMock.balanceOf(user1.address);
 
       tx = await usdcMock.connect(user1).approve(savePakistan.address, usdcMintRate);
@@ -332,12 +334,14 @@ describe("Spec: SavePakistan", () => {
       expect(currentBalanceBN).to.be.eq(balanceBN.sub(usdcMintRate));
     });
 
-    it.only("should use the Optimism mint rate when token address is the Optimism Token address", async () => {
-      console.log()
+    it("should use the Optimism mint rate when token address is the Optimism Token address", async () => {
+      console.log();
       let tx = await oPMock.mintTo(user1.address, utils.parseUnits("100000000000000000000", 18));
       await tx.wait();
 
-      const optimismMintRate = await savePakistan.getVariantOptimismMintRate(Variant.TemporaryShelter);
+      const optimismMintRate = await savePakistan.getVariantOptimismMintRate(
+        Variant.TemporaryShelter
+      );
       const balanceBN = await oPMock.balanceOf(user1.address);
 
       tx = await oPMock.connect(user1).approve(savePakistan.address, optimismMintRate);
@@ -358,7 +362,7 @@ describe("Spec: SavePakistan", () => {
       let tx = await usdcMock.mintTo(user1.address, utils.parseUnits("5000", 6));
       await tx.wait();
 
-      const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
+      const usdcMintRate = await savePakistan.usdcMintRates(Variant.TemporaryShelter);
       const balanceBN = await usdcMock.balanceOf(user1.address);
       const quantity = BigNumber.from("5");
 
@@ -377,7 +381,7 @@ describe("Spec: SavePakistan", () => {
     });
 
     it("should revert mint when user has no USDC balance", async () => {
-      const usdcMintRate = await savePakistan.USDC_MINT_RATE(Variant.TemporaryShelter);
+      const usdcMintRate = await savePakistan.usdcMintRates(Variant.TemporaryShelter);
       const quantity = BigNumber.from("5");
 
       let tx = await usdcMock
