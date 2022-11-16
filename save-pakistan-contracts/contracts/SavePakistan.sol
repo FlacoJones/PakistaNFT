@@ -173,11 +173,6 @@ contract SavePakistan is ERC1155, ERC1155Supply, AccessControl, ReentrancyGuard 
     receive() external payable {}
 
     /**
-     * @notice Fallback function is called when `msg.data` is not empty
-     */
-    fallback() external payable {}
-
-    /**
      * @notice Withdraws all ether balance to the designated treasury address.
      */
     function withdrawEther() external onlyAdmin {
