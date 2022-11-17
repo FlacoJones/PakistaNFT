@@ -1,3 +1,5 @@
+/* solhint-disable var-name-mixedcase */
+/* solhint-disable func-param-name-mixedcase */
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
@@ -203,7 +205,6 @@ contract SavePakistan is
      */
     receive() external payable {}
 
-    /**
      * @notice Sets new treasury address.
      * @param _treasuryAddr The new treasury address.
      */
@@ -211,6 +212,7 @@ contract SavePakistan is
         emit SetTreasuryAddr(treasuryAddr, _treasuryAddr);
         treasuryAddr = _treasuryAddr;
     }
+
 
     /**
      * @notice Withdraws all ether balance to the designated treasury address.
@@ -238,7 +240,7 @@ contract SavePakistan is
      */
     function mintWithEth(Variant _variant, uint256 _quantity) external payable nonReentrant whenNotPaused {
         require(
-            _quantity < getVariantRemainingSupply(_variant),
+            _quantity <= getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
         );
 
@@ -246,7 +248,6 @@ contract SavePakistan is
         uint256 amount = _quantity * rate;
         require(msg.value >= amount, "SavePakistan: Not enough Ether sent.");
 
-        // send ether to treasury
         (bool sent, ) = payable(address(this)).call{value: msg.value}("");
         require(sent, "SavePakistan: Failed to send Ether.");
 
@@ -270,7 +271,7 @@ contract SavePakistan is
     ) external nonReentrant whenNotPaused {
         require(_tokenAddrToSupported[_tokenAddr], "SavePakistan: This token is not supported.");
         require(
-            _quantity < getVariantRemainingSupply(_variant),
+            _quantity <= getVariantRemainingSupply(_variant),
             "SavePakistan: The requested quantity to purchase is beyond the remaining supply."
         );
 
