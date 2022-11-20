@@ -1,16 +1,17 @@
 import { providers, Signer, utils } from 'ethers'
 import { ERC20, ERC20__factory } from '@/types/contracts'
 import { DEFAULT_CHAIN } from '@/constants'
+import { getProvider } from '@wagmi/core'
 
+const alchemyId = import.meta.env.VITE_ALCHEMY_ID
 export class Erc20Util {
   public static GetContract = (
     address: string,
     signerOrProvider?: Signer | providers.BaseProvider | undefined
-  ): ERC20 =>
-    ERC20__factory.connect(
-      address,
-      signerOrProvider ?? providers.getDefaultProvider(DEFAULT_CHAIN.id)
-    )
+  ): ERC20 => {
+    const provider = getProvider({ chainId: DEFAULT_CHAIN.id })
+    return ERC20__factory.connect(address, signerOrProvider ?? provider)
+  }
 
   public static GetAllowance = async (
     owner: string,

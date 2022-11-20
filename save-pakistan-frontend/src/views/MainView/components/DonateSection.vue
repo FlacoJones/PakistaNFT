@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { DEFAULT_CHAIN, SP_VARIANT_INFO, ETH, TOKENS } from '@/constants'
+import {
+  DEFAULT_CHAIN,
+  SP_VARIANT_INFO,
+  ETH,
+  TOKENS,
+  SAVE_PAKISTAN_CONTRACT_ADDRESS,
+} from '@/constants'
 import {
   useAccount,
   useBalance,
@@ -11,7 +17,7 @@ import {
 } from 'vagmi'
 import { useStore } from '@/store'
 import { storeToRefs } from 'pinia'
-import { useMintWithEth, useMintWithToken } from '@/composables'
+import { useAllowance, useApprove, useMintWithEth, useMintWithToken } from '@/composables'
 import { Token } from '@/types'
 
 import ConnectWalletModal from '@/components/ConnectWalletModal.vue'
@@ -62,6 +68,7 @@ const { address, isConnected } = useAccount()
  */
 const tokens = computed(() => TOKENS[chain?.value?.id ?? DEFAULT_CHAIN.id])
 const selectedToken = ref<Token>(ETH)
+const isEth = computed(() => !selectedToken.value.address)
 
 const isTokenListShown = ref(false)
 
@@ -74,7 +81,7 @@ const selectToken = (token: Token) => {
  * balance
  */
 const { data: balance } = useBalance({
-  addressOrName: computed(() => address.value),
+  addressOrName: address,
   token: computed(() => selectedToken.value.address),
   chainId: computed(() => (isCorrectChain.value ? chain?.value?.id : DEFAULT_CHAIN.id)),
   formatUnits: computed(() => selectedToken.value.decimals),
@@ -85,7 +92,6 @@ const { data: balance } = useBalance({
  * quantity
  */
 const quantity = ref(1)
-const totalPrice = computed(() => variantInfo.value.price * quantity.value)
 
 watch([selectedVariant], () => {
   quantity.value = 1
@@ -93,12 +99,63 @@ watch([selectedVariant], () => {
 })
 
 /**
+ * amount
+ */
+const amountUsd = computed(() => variantInfo.value.price * quantity.value)
+
+const tokenMintRate = 1
+const tokenAmount = computed(() => (variantInfo.value.price * quantity.value) / tokenMintRate)
+
+/**
  * allowance
  */
+const spender = computed(() => SAVE_PAKISTAN_CONTRACT_ADDRESS[chain?.value?.id ?? DEFAULT_CHAIN.id])
+
+const isExceedsAllowance = ref(false)
+
+const { data: allowance, refetch: refetchAllowance } = useAllowance({
+  token: computed(() => selectedToken.value),
+  owner: address,
+  spender: spender,
+  refetchInterval: computed(() => isExceedsAllowance.value && 3000),
+})
+
+watch([allowance, tokenAmount, isEth], () => {
+  isExceedsAllowance.value = !isEth.value && tokenAmount.value > (allowance.value ?? 0)
+})
 
 /**
  * approve
  */
+const {
+  mutate: mutateApprove,
+  data: approveTx,
+  isLoading: isSigningApprove,
+  reset: resetApproveTx,
+} = useApprove()
+
+const { isLoading: isLoadingApprove } = useWaitForTransaction({
+  hash: approveTx.value?.hash,
+  wait: approveTx.value?.wait,
+  confirmations: 4,
+  onSettled: () => {
+    resetApproveTx()
+  },
+  onSuccess: () => {
+    refetchAllowance()
+  },
+})
+
+const approve = () =>
+  mutateApprove({
+    spender: spender.value,
+    value: tokenAmount.value.toString(),
+    token: selectedToken.value,
+  })
+
+const isApproving = computed(
+  () => isSigningApprove.value || (isLoadingApprove.value && !!approveTx.value)
+)
 
 /**
  * mint
@@ -137,7 +194,7 @@ const mint = () => {
 
 const mintTx = computed(() => mintWithEthTx.value || mintWithTokenTx.value)
 
-const resetTx = () => {
+const resetMintTx = () => {
   resetMintWithEthTx()
   resetMintWithTokenTx()
 }
@@ -147,6 +204,8 @@ const { isLoading: isLoadingMint } = useWaitForTransaction({
   wait: mintTx.value?.wait,
   onSuccess: (receipt) => {
     console.log(receipt)
+    refetchAllowance()
+    store.setSelectedVariant(undefined)
   },
   onError: (error) => {
     console.error(error)
@@ -162,7 +221,7 @@ const isMinting = computed(
 
 const isTxSubmittedModalOpen = computed(() => !!mintTx.value)
 const onTxSubmittedModalClose = () => {
-  resetTx()
+  resetMintTx()
 }
 </script>
 
@@ -263,15 +322,25 @@ const onTxSubmittedModalClose = () => {
                 </div>
               </div>
             </div>
+
+            <!-- Approve button -->
+            <button
+              v-if="isExceedsAllowance"
+              class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isApproving"
+              @click="approve"
+            >
+              {{ isApproving ? 'Approving...' : `Approve ${selectedToken.symbol}` }}
+            </button>
           </div>
 
           <!-- Mint button -->
           <button
             class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="!isConnected || !isCorrectChain || isMinting"
+            :disabled="!isConnected || !isCorrectChain || isExceedsAllowance || isMinting"
             @click="mint"
           >
-            {{ isMinting ? 'Minting...' : `Donate $${totalPrice}` }}
+            {{ isMinting ? 'Minting...' : `Donate $${amountUsd}` }}
           </button>
         </div>
       </div>

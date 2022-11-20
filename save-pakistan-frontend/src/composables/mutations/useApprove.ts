@@ -1,6 +1,6 @@
 import { useMutation } from 'vue-query'
 import { Token } from '@/types'
-import { useSigner } from 'vagmi'
+import { fetchSigner } from '@wagmi/core'
 import { Erc20Util } from '@/utils'
 
 interface IUseApprove {
@@ -10,14 +10,13 @@ interface IUseApprove {
 }
 
 export const useApprove = () => {
-  const { data: signer } = useSigner()
-
   const mutation = useMutation(
     async ({ token, spender, value }: IUseApprove) => {
-      if (!signer.value || !token.address) {
+      const signer = await fetchSigner()
+      if (!signer || !token.address) {
         return
       }
-      const tx = await Erc20Util.Approve(spender, value, token.address, signer.value)
+      const tx = await Erc20Util.Approve(spender, value, token.address, signer)
       return tx
     },
     {

@@ -3,16 +3,19 @@ import { SavePakistan, SavePakistan__factory } from '@/types/contracts'
 import { SPVariant } from '@/types'
 import { DEFAULT_CHAIN, SAVE_PAKISTAN_CONTRACT_ADDRESS } from '@/constants'
 import { Erc20Util } from './Erc20Util'
+import { getProvider } from '@wagmi/core'
 
 export class SavePakistanUtil {
   public static GetContract = (
     address?: string | undefined,
     signerOrProvider?: Signer | providers.BaseProvider | undefined
-  ): SavePakistan =>
-    SavePakistan__factory.connect(
+  ): SavePakistan => {
+    const provider = getProvider({ chainId: DEFAULT_CHAIN.id })
+    return SavePakistan__factory.connect(
       address ?? SAVE_PAKISTAN_CONTRACT_ADDRESS[DEFAULT_CHAIN.id],
-      signerOrProvider ?? providers.getDefaultProvider(DEFAULT_CHAIN.id)
+      signerOrProvider ?? provider
     )
+  }
 
   public static GetTotalSupplyForVariant = async (
     variant: SPVariant,

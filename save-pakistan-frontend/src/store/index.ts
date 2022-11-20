@@ -4,7 +4,7 @@ import { SPVariant } from '@/types'
 
 export const useStore = defineStore('MainStore', () => {
   const selectedVariant = ref<SPVariant | undefined>()
-  const setSelectedVariant = (variant: SPVariant) => {
+  const setSelectedVariant = (variant: SPVariant | undefined) => {
     selectedVariant.value = variant
   }
 
