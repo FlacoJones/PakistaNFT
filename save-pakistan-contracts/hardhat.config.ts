@@ -46,6 +46,9 @@ const config: HardhatUserConfig = {
       url: process.env.MAINNET_URL || "",
       accounts,
     },
+    local: {
+      url: process.env.TESTNET_URL || "",
+    },
     kovan: {
       url: process.env.KOVAN_URL || "",
       accounts,

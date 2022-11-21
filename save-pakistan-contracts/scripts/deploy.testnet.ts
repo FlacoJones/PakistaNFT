@@ -1,17 +1,17 @@
 import { formatEther } from "ethers/lib/utils";
-import { ethers, run } from "hardhat";
+import { ethers, network, run } from "hardhat";
 import { SavePakistan } from "../typechain-types";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
+
   let nonce = await deployer.getTransactionCount();
-  const [network, balanceBN] = await Promise.all([
-    deployer.provider?.getNetwork(),
-    deployer.getBalance(),
-  ]);
+
+  const [balanceBN] = await Promise.all([deployer.getBalance()]);
+
   console.log("deployer", deployer.address);
   console.log("balance", formatEther(balanceBN));
-  console.log("network", `${network?.name} (${network?.chainId})`);
+  console.log("network", network.name);
 
   const baseURI =
     "https://ipfs.io/ipfs/bafybeihrni33k36zw6v7hv2miggpaqdnkgwe7mac6ww6enju44wqxxiqkq/";
@@ -42,38 +42,56 @@ async function main() {
   nonce = await deployer.getTransactionCount();
   console.log("mockEthUsdPriceFeed", mockEthUsdPriceFeed.address);
 
-  // ERC1155
-  const SavePakistan = await ethers.getContractFactory("SavePakistan");
-  const savePakistan = <SavePakistan>await SavePakistan.deploy(
+  // ERC1155 implementation
+  const SavePakistanImplementation = await ethers.getContractFactory("SavePakistan");
+  const savePakistanImplementation = <SavePakistan>(
+    await SavePakistanImplementation.deploy({ nonce })
+  );
+  await savePakistanImplementation.deployed();
+  nonce = await deployer.getTransactionCount();
+  console.log("savePakistanImplementation", savePakistanImplementation.address);
+
+  // Deploy SavePakistanProxy
+  const SavePakistanProxy = await ethers.getContractFactory("SavePakistanProxy");
+  let savePakistan = (<unknown>(
+    await SavePakistanProxy.deploy(savePakistanImplementation.address, [], { nonce })
+  )) as SavePakistan;
+  await savePakistan.deployed();
+  nonce = await deployer.getTransactionCount();
+
+  // Attach the SavePakistan ABI to the SavePakistanProxy address to send method calls to the delegatecall
+  savePakistan = await SavePakistanImplementation.attach(savePakistan.address);
+  await savePakistan.initialize(
     treasuryMock.address,
     usdcMock.address,
     usdtMock.address,
+    usdtMock.address, // should be OP token address
     mockEthUsdPriceFeed.address,
-    baseURI,
-    {
-      nonce,
-    }
+    mockEthUsdPriceFeed.address, // should be OP price feed
+    baseURI
   );
-  await savePakistan.deployed();
+  nonce = await deployer.getTransactionCount();
   console.log("savePakistan", savePakistan.address);
 
   // ! verification
-  await run("verify:verify", {
-    address: treasuryMock.address,
-    constructorArguments: [],
-  });
-  await run("verify:verify", {
-    address: usdcMock.address,
-    constructorArguments: [],
-  });
-  await run("verify:verify", {
-    address: usdtMock.address,
-    constructorArguments: [],
-  });
-  await run("verify:verify", {
-    address: savePakistan.address,
-    constructorArguments: [treasuryMock.address, usdcMock.address, usdtMock.address, baseURI],
-  });
+  if (network.name != "local") {
+    await run("verify:verify", {
+      address: treasuryMock.address,
+      constructorArguments: [],
+    });
+    await run("verify:verify", {
+      address: usdcMock.address,
+      constructorArguments: [],
+    });
+    await run("verify:verify", {
+      address: usdtMock.address,
+      constructorArguments: [],
+    });
+    await run("verify:verify", {
+      address: savePakistan.address,
+      constructorArguments: [treasuryMock.address, usdcMock.address, usdtMock.address, baseURI],
+    });
+  }
 }
 
 main()
