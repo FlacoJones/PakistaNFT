@@ -36,11 +36,23 @@ async function main() {
   nonce = await deployer.getTransactionCount();
   console.log("usdtMock", usdtMock.address);
 
+  const OPMock = await ethers.getContractFactory("OPMock");
+  const oPMock = await USDTMock.deploy({ nonce });
+  await oPMock.deployed();
+  nonce = await deployer.getTransactionCount();
+  console.log("oPMock", oPMock.address);
+
   const MockEthUsdPriceFeed = await ethers.getContractFactory("MockEthUsdPriceFeed");
   const mockEthUsdPriceFeed = await MockEthUsdPriceFeed.deploy({ nonce });
   await mockEthUsdPriceFeed.deployed();
   nonce = await deployer.getTransactionCount();
   console.log("mockEthUsdPriceFeed", mockEthUsdPriceFeed.address);
+
+  const MockOpUsdPriceFeed = await ethers.getContractFactory("MockOpUsdPriceFeed");
+  const mockOpUsdPriceFeed = await MockOpUsdPriceFeed.deploy({ nonce });
+  await mockOpUsdPriceFeed.deployed();
+  nonce = await deployer.getTransactionCount();
+  console.log("mockOpUsdPriceFeed", mockOpUsdPriceFeed.address);
 
   // ERC1155 implementation
   const SavePakistanImplementation = await ethers.getContractFactory("SavePakistan");
@@ -65,9 +77,9 @@ async function main() {
     treasuryMock.address,
     usdcMock.address,
     usdtMock.address,
-    usdtMock.address, // should be OP token address
+    oPMock.address,
     mockEthUsdPriceFeed.address,
-    mockEthUsdPriceFeed.address, // should be OP price feed
+    mockOpUsdPriceFeed.address,
     baseURI
   );
   nonce = await deployer.getTransactionCount();
