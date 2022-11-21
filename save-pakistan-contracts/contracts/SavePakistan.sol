@@ -205,6 +205,7 @@ contract SavePakistan is
      */
     receive() external payable {}
 
+    /**
      * @notice Sets new treasury address.
      * @param _treasuryAddr The new treasury address.
      */
