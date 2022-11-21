@@ -1,13 +1,13 @@
 # Save Pakistan Contracts
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+## Getting Started
 
-Try running some of the following tasks:
+- yarn
+- yarn start (this will boot the Hardhat Testnet on port 8545)
+- Set `TESTNET_URL=http://localhost:8545` in your `.env`
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+updated the tests to reflect it
+
+if you run yarn start followed by yarn deploy:local with TESTNET_URL=http://localhost:8545 in you .env it should deploy the upgradeable contracts to http://localhost:8545 and print the contract addresses
+
+address you're looking for will be printed as savePakistan
