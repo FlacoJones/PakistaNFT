@@ -214,7 +214,6 @@ contract SavePakistan is
         treasuryAddr = _treasuryAddr;
     }
 
-
     /**
      * @notice Withdraws all ether balance to the designated treasury address.
      */
@@ -373,14 +372,14 @@ contract SavePakistan is
      * @notice Returns current token variant price in wei based on the latest Ether/USD price on Chainlink Oracle
      */
     function getVariantEtherMintRate(Variant _variant) public view returns (uint256) {
-        return (usdMintRates[uint256(_variant)] * 10**18) / (getLatestPrice() / 10**8);
+        return (usdMintRates[uint256(_variant)] * 10**26) / getLatestPrice();
     }
 
     /**
      * @notice Returns current token variant price in wei based on the latest Optimism/USD price on Chainlink Oracle
      */
     function getVariantOptimismMintRate(Variant _variant) public view returns (uint256) {
-        return (usdMintRates[uint256(_variant)] * 10**18) / (getLatestOptimismPrice() / 10**8);
+        return (usdMintRates[uint256(_variant)] * 10**26) / getLatestOptimismPrice();
     }
 
     /**

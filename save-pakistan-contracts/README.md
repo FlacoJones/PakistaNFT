@@ -1,13 +1,9 @@
 # Save Pakistan Contracts
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+## Getting Started
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+- `yarn`
+- `mv .env.example .env`
+- `yarn start` (this will boot the Hardhat Testnet on port 8545)
+- `yarn deploy:local` (this will deploy contracts to Hardhat Testnet)
+- Find the SavePakistan ERC1155 contract to interact with printed in the console after `savePakistan`

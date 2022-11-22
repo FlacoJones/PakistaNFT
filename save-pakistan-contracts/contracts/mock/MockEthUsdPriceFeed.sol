@@ -15,6 +15,6 @@ contract MockEthUsdPriceFeed {
             uint80 answeredInRound
         )
     {
-        return (70942, 132356008734, 1665166889, 1665166889, 70942);
+        return (70942, 111025500000, 1665166889, 1665166889, 70942);
     }
 }

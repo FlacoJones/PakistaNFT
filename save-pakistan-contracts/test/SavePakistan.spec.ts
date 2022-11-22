@@ -99,79 +99,79 @@ describe("Spec: SavePakistan", () => {
   describe("> getLatestPrice", () => {
     it("should return latest price", async () => {
       const price = await savePakistan.getLatestPrice();
-      expect(price).to.be.eq(132356008734);
+      expect(price).to.be.eq(111025500000);
     });
   });
 
   describe("> getVariantEtherMintRate", () => {
     it("should return correct wei price for RationBag", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.RationBag);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("22675736961451247"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("27020819541456692"));
     });
 
     it("should return correct wei price for TemporaryShelter", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(
         Variant.TemporaryShelter
       );
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("75585789871504157"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("90069398471522307"));
     });
 
     it("should return correct wei price for HygieneKit", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.HygieneKit);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("7558578987150415"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("9006939847152230"));
     });
 
     it("should return correct wei price for PortableToilets", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(
         Variant.PortableToilets
       );
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("49130763416477702"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("58545109006489500"));
     });
 
     it("should return correct wei price for Water", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.Water);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("2267573696145124"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("2702081954145669"));
     });
 
     it("should return correct wei price for WaterWheel", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantEtherMintRate(Variant.WaterWheel);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("18896447467876039"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("22517349617880576"));
     });
   });
 
   describe("> getVariantOptimismMintRate", () => {
     it("should return correct wei price for RationBag", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.RationBag);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("30000000000000000000"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("35294184913623011846"));
     });
 
     it("should return correct wei price for TemporaryShelter", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(
         Variant.TemporaryShelter
       );
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("100000000000000000000"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("117647283045410039487"));
     });
 
     it("should return correct wei price for HygieneKit", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.HygieneKit);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("10000000000000000000"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("11764728304541003948"));
     });
 
     it("should return correct wei price for PortableToilets", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(
         Variant.PortableToilets
       );
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("65000000000000000000"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("76470733979516525666"));
     });
 
     it("should return correct wei price for Water", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.Water);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("3000000000000000000"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("3529418491362301184"));
     });
 
     it("should return correct wei price for WaterWheel", async () => {
       const rationBagEtherPrice = await savePakistan.getVariantOptimismMintRate(Variant.WaterWheel);
-      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("25000000000000000000"));
+      expect(rationBagEtherPrice).to.be.eq(BigNumber.from("29411820761352509871"));
     });
   });
 
