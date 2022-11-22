@@ -36,11 +36,11 @@ export const useMintWithToken = () => {
   const mutation = useMutation(
     async ({ token, variant, quantity }: IMintWithToken) => {
       const signer = await fetchSigner()
-      if (!signer || !token.address) {
+      if (!signer) {
         return
       }
 
-      const tx = await SavePakistanUtil.MintWithToken(variant, token.address, quantity, signer)
+      const tx = await SavePakistanUtil.MintWithToken(variant, token, quantity, signer)
       return tx
     },
     {

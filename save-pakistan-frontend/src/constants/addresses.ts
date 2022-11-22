@@ -1,6 +1,6 @@
 import { MAINNET_CHAIN, TESTNET_CHAIN } from '@/constants'
 
 export const SAVE_PAKISTAN_CONTRACT_ADDRESS: { [chainId: number]: string } = {
-  [TESTNET_CHAIN.id]: '0xb9Abc289a2a38513347341c3f2E65dE426d850e6',
+  [TESTNET_CHAIN.id]: '0xFf31E7dDfa2372685E5F9B2C5120C787Ae3c0272',
   [MAINNET_CHAIN.id]: '0x',
 }

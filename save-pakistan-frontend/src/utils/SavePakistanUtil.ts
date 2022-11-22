@@ -1,8 +1,7 @@
-import { providers, Signer, utils } from 'ethers'
+import { BigNumber, providers, Signer, utils } from 'ethers'
 import { SavePakistan, SavePakistan__factory } from '@/types/contracts'
-import { SPVariant } from '@/types'
+import { SPVariant, Token } from '@/types'
 import { DEFAULT_CHAIN, SAVE_PAKISTAN_CONTRACT_ADDRESS } from '@/constants'
-import { Erc20Util } from './Erc20Util'
 import { getProvider } from '@wagmi/core'
 
 export class SavePakistanUtil {
@@ -58,37 +57,22 @@ export class SavePakistanUtil {
     return balance
   }
 
-  public static GetUSDCAddress = async (
-    contractAddress?: string | undefined,
-    provider?: providers.BaseProvider | Signer | undefined
-  ) => {
-    const savePakistanContract = this.GetContract(contractAddress, provider)
-    const usdcAddress = await savePakistanContract.usdcAddr()
-    return usdcAddress
-  }
-
-  public static GetUSDTAddress = async (
-    contractAddress?: string | undefined,
-    provider?: providers.BaseProvider | Signer | undefined
-  ) => {
-    const savePakistanContract = this.GetContract(contractAddress, provider)
-    const usdtAddress = await savePakistanContract.usdtAddr()
-    return usdtAddress
-  }
-
   public static GetVariantMintRate = async (
     variant: SPVariant,
-    token: string,
+    token: Token,
     contractAddress?: string | undefined,
     provider?: providers.BaseProvider | Signer | undefined
   ) => {
     const savePakistanContract = this.GetContract(contractAddress, provider)
-    const [rateBN, decimals] = await Promise.all([
-      savePakistanContract.getVariantMintRate(variant, token),
-      Erc20Util.GetDecimals(token, provider),
-    ])
-    const rate = Number(utils.formatUnits(rateBN, decimals))
-    return rate
+    let mintRate: BigNumber
+    if (!token.address) {
+      mintRate = await savePakistanContract.getVariantEtherMintRate(variant)
+    } else if (token.symbol === 'OP') {
+      mintRate = await savePakistanContract.getVariantOptimismMintRate(variant)
+    } else {
+      mintRate = await savePakistanContract.getVariantMintRate(variant, token.address)
+    }
+    return mintRate
   }
 
   public static MintWithEth = async (
@@ -108,13 +92,16 @@ export class SavePakistanUtil {
 
   public static MintWithToken = async (
     variant: SPVariant,
-    token: string,
+    token: Token,
     quantity: number,
     signer: Signer,
     contractAddress?: string | undefined
   ) => {
+    if (!token.address) {
+      return this.MintWithEth(variant, quantity, signer, contractAddress)
+    }
     const savePakistanContract = this.GetContract(contractAddress, signer)
-    const tx = await savePakistanContract.mintWithToken(variant, token, quantity, {
+    const tx = await savePakistanContract.mintWithToken(variant, token.address, quantity, {
       gasLimit: 200_000,
     })
     return tx

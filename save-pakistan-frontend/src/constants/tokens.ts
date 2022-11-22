@@ -16,7 +16,7 @@ export const USDC: { [chainId: number]: Token } = {
   },
   [TESTNET_CHAIN.id]: {
     symbol: 'USDC',
-    address: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
+    address: '0x596a8d9270Ac527dB25C61D810ae04E5b41DaC8c',
     decimals: 6,
     name: 'USD Coin',
     logoURI: '/img/usdc.svg',
@@ -33,7 +33,7 @@ export const USDT: { [chainId: number]: Token } = {
   },
   [TESTNET_CHAIN.id]: {
     symbol: 'USDT',
-    address: '0xe802376580c10fE23F027e1E19Ed9D54d4C9311e',
+    address: '0x2B3A924177B3C2B4EC74B31A475a90c17F7bE090',
     decimals: 18,
     name: 'Tether USD',
     logoURI: '/img/usdt.svg',
@@ -50,7 +50,7 @@ export const OP: { [chainId: number]: Token } = {
   },
   [TESTNET_CHAIN.id]: {
     symbol: 'OP',
-    address: '0x4200000000000000000000000000000000000042',
+    address: '0x99A71453dbf1baaBe8a3864221fB335E34759386',
     decimals: 18,
     name: 'Optimism',
     logoURI: '/img/op.svg',

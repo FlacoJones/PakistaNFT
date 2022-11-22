@@ -12,7 +12,7 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
   [SPVariant.PortableToilets]: {
     title: '1,000 Eco-Friendly Portable Toilets',
     desc: 'An environment-friendly and locally-sourced materials such as bamboo sticks',
-    price: 65,
+    price: 70,
     subdesc: 'Serves at least 5 families',
     variant: SPVariant.PortableToilets,
     imgSrc: './img/toilet.png',
@@ -28,8 +28,8 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
   [SPVariant.Water]: {
     title: '5 Million Liters',
     desc: 'Clean & Safe Water',
-    price: 3.5,
-    subdesc: 'Per 1,000 Liters',
+    price: 35,
+    subdesc: 'Per 10,000 Liters',
     variant: SPVariant.Water,
     imgSrc: './img/water.png',
   },
@@ -44,7 +44,7 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
   [SPVariant.WaterWheel]: {
     title: '5,000 Help-2-Others (H2O) Wheels',
     desc: 'A 40 Liter clean and safe water transporter and storage container',
-    price: 25,
+    price: 20,
     subdesc: '',
     variant: SPVariant.WaterWheel,
     imgSrc: './img/water-wheel.png',

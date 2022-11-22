@@ -1,4 +1,4 @@
-import { providers, Signer, utils } from 'ethers'
+import { BigNumber, providers, Signer, utils } from 'ethers'
 import { ERC20, ERC20__factory } from '@/types/contracts'
 import { DEFAULT_CHAIN } from '@/constants'
 import { getProvider } from '@wagmi/core'
@@ -20,11 +20,7 @@ export class Erc20Util {
     provider?: providers.BaseProvider | Signer | undefined
   ) => {
     const erc20Contract = this.GetContract(token, provider)
-    const [allowanceBN, decimals] = await Promise.all([
-      erc20Contract.allowance(owner, spender),
-      erc20Contract.decimals(),
-    ])
-    const allowance = Number(utils.formatUnits(allowanceBN, decimals))
+    const allowance = await erc20Contract.allowance(owner, spender)
     return allowance
   }
 
@@ -51,11 +47,14 @@ export class Erc20Util {
     return decimals
   }
 
-  public static Approve = async (spender: string, value: string, token: string, signer: Signer) => {
+  public static Approve = async (
+    spender: string,
+    value: BigNumber,
+    token: string,
+    signer: Signer
+  ) => {
     const erc20Contract = this.GetContract(token, signer)
-    const decimals = await erc20Contract.decimals()
-    const valueBN = utils.parseUnits(value, decimals)
-    const tx = await erc20Contract.approve(spender, valueBN, { gasLimit: 200_000 })
+    const tx = await erc20Contract.approve(spender, value, { gasLimit: 200_000 })
     return tx
   }
 }

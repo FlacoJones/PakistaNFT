@@ -2,11 +2,11 @@ import { useQuery } from 'vue-query'
 import { SPVariant } from '@/types'
 import { SavePakistanUtil } from '@/utils'
 
-interface ITotalSupplyForVariant {
+interface IUseTotalSupplyForVariant {
   variant: SPVariant
 }
 
-export const useTotalSupplyForVariant = ({ variant }: ITotalSupplyForVariant) => {
+export const useTotalSupplyForVariant = ({ variant }: IUseTotalSupplyForVariant) => {
   const query = useQuery(
     ['total-supply-for-variant-query', variant],
     async () => {

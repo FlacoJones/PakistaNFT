@@ -17,7 +17,13 @@ import {
 } from 'vagmi'
 import { useStore } from '@/store'
 import { storeToRefs } from 'pinia'
-import { useAllowance, useApprove, useMintWithEth, useMintWithToken } from '@/composables'
+import {
+  useAllowance,
+  useApprove,
+  useMintRate,
+  useMintWithEth,
+  useMintWithToken,
+} from '@/composables'
 import { Token } from '@/types'
 
 import ConnectWalletModal from '@/components/ConnectWalletModal.vue'
@@ -88,6 +94,8 @@ const { data: balance } = useBalance({
   watch: true,
 })
 
+const isExceedsBalance = ref(false)
+
 /**
  * quantity
  */
@@ -103,8 +111,19 @@ watch([selectedVariant], () => {
  */
 const amountUsd = computed(() => variantInfo.value.price * quantity.value)
 
-const tokenMintRate = 1
-const tokenAmount = computed(() => (variantInfo.value.price * quantity.value) / tokenMintRate)
+const { data: tokenMintRate } = useMintRate({
+  variant: computed(() => selectedVariant.value),
+  token: computed(() => selectedToken.value),
+})
+const tokenAmount = computed(() => tokenMintRate.value?.mul(quantity.value))
+
+watch([balance, tokenAmount], () => {
+  if (!balance.value || !tokenAmount.value) {
+    isExceedsBalance.value = false
+    return
+  }
+  isExceedsBalance.value = tokenAmount.value.gt(balance.value.value)
+})
 
 /**
  * allowance
@@ -121,7 +140,15 @@ const { data: allowance, refetch: refetchAllowance } = useAllowance({
 })
 
 watch([allowance, tokenAmount, isEth], () => {
-  isExceedsAllowance.value = !isEth.value && tokenAmount.value > (allowance.value ?? 0)
+  if (isEth.value) {
+    isExceedsAllowance.value = false
+    return
+  }
+  if (!allowance.value || !tokenAmount.value) {
+    isExceedsAllowance.value = true
+    return
+  }
+  isExceedsAllowance.value = tokenAmount.value.gt(allowance.value)
 })
 
 /**
@@ -138,18 +165,16 @@ const { isLoading: isLoadingApprove } = useWaitForTransaction({
   hash: approveTx.value?.hash,
   wait: approveTx.value?.wait,
   confirmations: 4,
-  onSettled: () => {
-    resetApproveTx()
-  },
   onSuccess: () => {
     refetchAllowance()
+    resetApproveTx()
   },
 })
 
 const approve = () =>
   mutateApprove({
     spender: spender.value,
-    value: tokenAmount.value.toString(),
+    value: tokenAmount.value,
     token: selectedToken.value,
   })
 
@@ -202,6 +227,7 @@ const resetMintTx = () => {
 const { isLoading: isLoadingMint } = useWaitForTransaction({
   hash: mintTx.value?.hash,
   wait: mintTx.value?.wait,
+  confirmations: 3,
   onSuccess: (receipt) => {
     console.log(receipt)
     refetchAllowance()
@@ -300,7 +326,10 @@ const onTxSubmittedModalClose = () => {
                 </div>
               </button>
 
-              <div class="text-right leading-4 text-sm">
+              <div
+                class="text-right leading-4 text-sm"
+                :class="[isExceedsBalance && ' text-red-500 font-bold']"
+              >
                 Balance: {{ balance?.formatted.substring(0, 6) ?? '0.0' }}
                 {{ selectedToken.symbol }}
               </div>

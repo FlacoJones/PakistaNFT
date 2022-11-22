@@ -2,12 +2,12 @@ import { useQuery } from 'vue-query'
 import { SPVariant } from '@/types'
 import { SavePakistanUtil } from '@/utils'
 
-interface IBalanceOf {
+interface IUseBalanceOf {
   account?: string | undefined
   variant: SPVariant
 }
 
-export const useBalanceOf = ({ account, variant }: IBalanceOf) => {
+export const useBalanceOf = ({ account, variant }: IUseBalanceOf) => {
   const query = useQuery(
     ['balance-of-query', account, variant],
     async () => {
