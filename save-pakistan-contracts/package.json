@@ -7,6 +7,7 @@
     "postinstall": "hardhat compile",
     "deploy:mainnet": "hardhat run scripts/deploy.mainnet.ts --network optimismEthereum",
     "deploy:testnet": "hardhat run scripts/deploy.testnet.ts --network optimismGoerli",
+    "deploy:goerli": "hardhat run scripts/deploy.testnet.ts --network goerli",
     "deploy:mumbai": "hardhat run scripts/deploy.ts --network mumbai",
     "deploy:local": "hardhat run scripts/deploy.testnet.ts --network local",
     "pr:create": "gh pr create --fill --title=$(git rev-parse --abbrev-ref HEAD)",

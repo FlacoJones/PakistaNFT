@@ -5,8 +5,8 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract OPMock is ERC20 {
     constructor() ERC20("OP Token", "OP") {
-        _mint(address(this), 1_000_000_000_000_000_000_000);
-        _mint(msg.sender, 1_000_000_000_000_000_000_000);
+        _mint(address(this), 1_000_000 ether);
+        _mint(msg.sender, 1_000_000 ether);
     }
 
     function decimals() public view virtual override returns (uint8) {

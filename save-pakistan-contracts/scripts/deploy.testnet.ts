@@ -37,10 +37,10 @@ async function main() {
   console.log("usdtMock", usdtMock.address);
 
   const OPMock = await ethers.getContractFactory("OPMock");
-  const oPMock = await USDTMock.deploy({ nonce });
-  await oPMock.deployed();
+  const opMock = await OPMock.deploy({ nonce });
+  await opMock.deployed();
   nonce = await deployer.getTransactionCount();
-  console.log("oPMock", oPMock.address);
+  console.log("oPMock", opMock.address);
 
   const MockEthUsdPriceFeed = await ethers.getContractFactory("MockEthUsdPriceFeed");
   const mockEthUsdPriceFeed = await MockEthUsdPriceFeed.deploy({ nonce });
@@ -77,7 +77,7 @@ async function main() {
     treasuryMock.address,
     usdcMock.address,
     usdtMock.address,
-    oPMock.address,
+    opMock.address,
     mockEthUsdPriceFeed.address,
     mockOpUsdPriceFeed.address,
     baseURI
