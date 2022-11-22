@@ -129,7 +129,7 @@ describe('SavePakistanUtil', () => {
     const initialTotalSupply = await fetchRationBagTotalSupply()
 
     const rate = await fetachRationBagMintRate()
-    const amount = (rate * quantity).toString()
+    const amount = rate.mul(quantity)
 
     const approveTx = await Erc20Util.Approve(
       SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
