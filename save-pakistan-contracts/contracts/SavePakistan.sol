@@ -152,25 +152,25 @@ contract SavePakistan is
             uint256(30), // Ration Bag
             uint256(100), // Temporary Shelter
             uint256(10), // Hygiene Kit
-            uint256(65), // Portable Toilets
-            uint256(3), // Clean and Safe Water
-            uint256(25) // H2O Wheel
+            uint256(70), // Portable Toilets
+            uint256(35), // Clean and Safe Water
+            uint256(20) // H2O Wheel
         ];
         usdcMintRates = [
             uint256(30_000_000), // Ration Bag
             uint256(100_000_000), // Temporary Shelter
             uint256(10_000_000), // Hygiene Kit
-            uint256(65_000_000), // Portable Toilets
+            uint256(70_000_000), // Portable Toilets
             uint256(3_500), // Clean and Safe Water
-            uint256(25_000_000) // H2O Wheel
+            uint256(20_000_000) // H2O Wheel
         ];
         usdtMintRates = [
             uint256(30_000_000_000_000_000_000), // Ration Bag
             uint256(100_000_000_000_000_000_000), // Temporary Shelter
             uint256(10_000_000_000_000_000_000), // Hygiene Kit
-            uint256(65_000_000_000_000_000_000), // Portable Toilets
+            uint256(70_000_000_000_000_000_000), // Portable Toilets
             uint256(3_500_000_000_000_000), // Clean and Safe Water
-            uint256(25_000_000_000_000_000_000) // H2O Wheel
+            uint256(20_000_000_000_000_000_000) // H2O Wheel
         ];
 
         // supported token rates
