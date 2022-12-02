@@ -2,8 +2,6 @@
 import { ContractTransaction } from 'ethers'
 import { useNetwork } from 'vagmi'
 
-import { DEFAULT_CHAIN, SAVE_PAKISTAN_CONTRACT_ADDRESS } from '@/constants'
-
 import CloseIcon from '@/components/icons/CloseIcon.vue'
 import TweeterIcon from '@/components/icons/TweeterIcon.vue'
 
@@ -15,7 +13,8 @@ defineProps<{
 
 const { chain } = useNetwork()
 
-const tweetText = `I've just minted https://savepakistan.org/ NFT 🇵🇰`
+const openseaUrl = `https://opensea.io/collection/save-pakistan`
+const tweetText = `🇵🇰🙏 I've just minted Save Pakistan NFT: ${openseaUrl}`
 </script>
 
 <template>
@@ -38,7 +37,7 @@ const tweetText = `I've just minted https://savepakistan.org/ NFT 🇵🇰`
         <!-- Modal header -->
         <div class="py-4 px-6 rounded-t border-b dark:border-gray-600">
           <h3 class="text-base font-semibold text-gray-900 lg:text-xl dark:text-white">
-            🇵🇰 Transaction submitted 🙏
+            Transaction submitted
           </h3>
         </div>
         <!-- Modal body -->
@@ -57,12 +56,10 @@ const tweetText = `I've just minted https://savepakistan.org/ NFT 🇵🇰`
             <li>
               <a
                 class="flex items-center p-3 text-base text-center cursor-pointer font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
-                :href="`https://qx.app/collections/${
-                  SAVE_PAKISTAN_CONTRACT_ADDRESS[chain?.id ?? DEFAULT_CHAIN.id]
-                }`"
+                :href="openseaUrl"
                 target="_blank"
               >
-                <span class="flex-1 ml-3 whitespace-nowrap">Collection on Quix</span>
+                <span class="flex-1 ml-3 whitespace-nowrap">Collection on OpenSea</span>
               </a>
             </li>
             <li>
@@ -73,7 +70,7 @@ const tweetText = `I've just minted https://savepakistan.org/ NFT 🇵🇰`
               >
                 <div class="inline-flex items-center mx-auto">
                   <TweeterIcon />
-                  <span class="flex-1 ml-3 whitespace-nowrap">Tweet</span>
+                  <span class="flex-1 ml-3 whitespace-nowrap">Tweet it!</span>
                 </div>
               </a>
             </li>
