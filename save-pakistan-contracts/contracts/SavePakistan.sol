@@ -114,7 +114,7 @@ contract SavePakistan is
     }
 
     function initialize(
-        address _treasuryAddr,
+        // address _treasuryAddr,
         address _usdcAddr,
         address _usdtAddr,
         address _optimismTokenAddr,
@@ -127,7 +127,7 @@ contract SavePakistan is
         __Ownable_init();
         __Pausable_init();
 
-        treasuryAddr = _treasuryAddr;
+        treasuryAddr = address(this);
         usdcAddr = _usdcAddr;
         usdtAddr = _usdtAddr;
         optimismTokenAddr = _optimismTokenAddr;
