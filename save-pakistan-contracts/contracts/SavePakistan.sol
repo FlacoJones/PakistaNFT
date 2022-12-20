@@ -153,7 +153,7 @@ contract SavePakistan is
             uint256(100), // Temporary Shelter
             uint256(10), // Hygiene Kit
             uint256(65), // Portable Toilets
-            uint256(3), // Clean and Safe Water
+            uint256(35), // Clean and Safe Water
             uint256(25) // H2O Wheel
         ];
         usdcMintRates = [
@@ -169,7 +169,7 @@ contract SavePakistan is
             uint256(100_000_000_000_000_000_000), // Temporary Shelter
             uint256(10_000_000_000_000_000_000), // Hygiene Kit
             uint256(65_000_000_000_000_000_000), // Portable Toilets
-            uint256(3_500_000_000_000_000), // Clean and Safe Water
+            uint256(35_000_000_000_000_000_000), // Clean and Safe Water
             uint256(25_000_000_000_000_000_000) // H2O Wheel
         ];
 
