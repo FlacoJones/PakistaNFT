@@ -161,7 +161,7 @@ contract SavePakistan is
             uint256(100_000_000), // Temporary Shelter
             uint256(10_000_000), // Hygiene Kit
             uint256(65_000_000), // Portable Toilets
-            uint256(3_500), // Clean and Safe Water
+            uint256(35_000_000), // Clean and Safe Water
             uint256(25_000_000) // H2O Wheel
         ];
         usdtMintRates = [

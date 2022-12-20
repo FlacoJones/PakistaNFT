@@ -191,7 +191,7 @@ describe("Spec: SavePakistan", () => {
         utils.parseUnits("100", decimals), // $100
         utils.parseUnits("10", decimals), // $10
         utils.parseUnits("65", decimals), // $65
-        utils.parseUnits("0.0035", decimals), // $0.0035
+        utils.parseUnits("35", decimals), // $35
         utils.parseUnits("25", decimals), // $25
       ];
       console.log(
