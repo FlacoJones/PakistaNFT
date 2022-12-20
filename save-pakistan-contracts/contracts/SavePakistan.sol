@@ -182,7 +182,7 @@ contract SavePakistan is
         _variantToMaxSupply[Variant.TemporaryShelter] = uint256(1_000);
         _variantToMaxSupply[Variant.HygieneKit] = uint256(5_000);
         _variantToMaxSupply[Variant.PortableToilets] = uint256(1_000);
-        _variantToMaxSupply[Variant.Water] = uint256(5_000);
+        _variantToMaxSupply[Variant.Water] = uint256(5_000_000);
         _variantToMaxSupply[Variant.WaterWheel] = uint256(5_000);
     }
 
