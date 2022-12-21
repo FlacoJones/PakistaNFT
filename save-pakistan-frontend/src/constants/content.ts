@@ -10,14 +10,14 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     variant: SPVariant.RationBag,
     imageURI: './img/ration.png',
   },
-  [SPVariant.PortableToilets]: {
-    title: 'Eco-Friendly Portable Toilets',
-    desc: 'An environment-friendly and locally-sourced materials such as bamboo sticks',
-    price: 70,
+  [SPVariant.TemporaryShelter]: {
+    title: 'Temporary Shelters',
+    desc: 'Relief tents or sustainable housing made of bamboo sticks',
+    price: 100,
     maxSupply: 1000,
-    subdesc: 'Serves at least 5 families',
-    variant: SPVariant.PortableToilets,
-    imageURI: './img/toilet.png',
+    subdesc: 'Serves 1 family or 6-7 people',
+    variant: SPVariant.TemporaryShelter,
+    imageURI: './img/shelter.png',
   },
   [SPVariant.HygieneKit]: {
     title: 'Hygiene Kits',
@@ -28,6 +28,15 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     variant: SPVariant.HygieneKit,
     imageURI: './img/hygiene.png',
   },
+  [SPVariant.PortableToilets]: {
+    title: 'Eco-Friendly Portable Toilets',
+    desc: 'An environment-friendly and locally-sourced materials such as bamboo sticks',
+    price: 65,
+    maxSupply: 1000,
+    subdesc: 'Serves at least 5 families',
+    variant: SPVariant.PortableToilets,
+    imageURI: './img/toilet.png',
+  },
   [SPVariant.Water]: {
     title: 'Clean & Safe Water',
     desc: '5 Million Liters',
@@ -37,22 +46,13 @@ export const SP_VARIANT_INFO: { [variant in SPVariant]: SPVariantInfo } = {
     variant: SPVariant.Water,
     imageURI: './img/water.png',
   },
-  [SPVariant.TemporaryShelter]: {
-    title: 'Temporary Shelters',
-    desc: 'Relief tents or sustainable housing made of bamboo sticks',
-    price: 100,
-    maxSupply: 1000,
-    subdesc: 'Serves 1 family or 6-7 people',
-    variant: SPVariant.TemporaryShelter,
-    imageURI: './img/shelter.png',
-  },
-  [SPVariant.WaterWheel]: {
+  [SPVariant.H2OWheel]: {
     title: 'Help-2-Others (H2O) Wheels',
     desc: 'A 40 Liter clean and safe water transporter and storage container',
-    price: 20,
+    price: 25,
     maxSupply: 5000,
     subdesc: '',
-    variant: SPVariant.WaterWheel,
+    variant: SPVariant.H2OWheel,
     imageURI: './img/water-wheel.png',
   },
 }

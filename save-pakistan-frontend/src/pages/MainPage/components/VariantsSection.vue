@@ -27,7 +27,7 @@ const { selectedVariant } = storeToRefs(store)
 
       <div class="flex md: flex-wrap">
         <VariantsSectionItem :variant="SPVariant.TemporaryShelter" />
-        <VariantsSectionItem :variant="SPVariant.WaterWheel" />
+        <VariantsSectionItem :variant="SPVariant.H2OWheel" />
       </div>
     </a>
   </div>

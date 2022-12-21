@@ -339,7 +339,7 @@ const onTxSubmittedModalClose = () => {
             <button
               v-if="isExceedsAllowance"
               class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="isLoadingApprove"
+              :disabled="!isConnected || !isCorrectChain || isLoadingApprove || isExceedsBalance"
               @click="approve"
             >
               {{ isLoadingApprove ? 'Approving...' : `Approve ${selectedToken.symbol}` }}
@@ -369,7 +369,7 @@ const onTxSubmittedModalClose = () => {
     <TxSubmittedModal
       :is-open="isTxSubmittedModalOpen"
       :on-close="onTxSubmittedModalClose"
-      :tx="mintWithEthTx || mintWithTokenTx"
+      :tx="mintTx"
     />
   </div>
 </template>

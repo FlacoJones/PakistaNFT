@@ -8,7 +8,7 @@ export enum SPVariant {
   HygieneKit,
   PortableToilets,
   Water,
-  WaterWheel,
+  H2OWheel,
 }
 
 export interface SPVariantInfo {

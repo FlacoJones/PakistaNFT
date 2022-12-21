@@ -14,7 +14,13 @@ defineProps<{
 const { chain } = useNetwork()
 
 const openseaUrl = `https://opensea.io/collection/save-pakistan`
-const tweetText = `🇵🇰🙏 I've just minted Save Pakistan NFT: ${openseaUrl}`
+const tweetText = `I just minted a @Savepakistanorg Relief NFT 🙏
+
+Together, we can support relief efforts in a way that has never been possible before this Christmas on @optimismFND and help people in Pakistan 🎅
+
+OpenSea: ${openseaUrl.replace('https://', '')}
+Mint Now: mint.savepakistan.org`
+const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURI(tweetText)}`
 </script>
 
 <template>
@@ -65,7 +71,7 @@ const tweetText = `🇵🇰🙏 I've just minted Save Pakistan NFT: ${openseaUrl
             <li>
               <a
                 class="flex items-center p-3 text-base text-center cursor-pointer font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
-                :href="`https://twitter.com/intent/tweet?text=${tweetText}`"
+                :href="tweetUrl"
                 target="_blank"
               >
                 <div class="inline-flex items-center mx-auto">
