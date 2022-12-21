@@ -186,7 +186,7 @@ const {
 } = useMintWithToken()
 
 const mint = () => {
-  if (!selectedVariant.value) {
+  if (selectedVariant.value === undefined) {
     return
   }
   if (!selectedToken.value.address) {
