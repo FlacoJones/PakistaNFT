@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
 	"name": "Eco-friendly Portable Toilets",
+=======
+	"name": "Save Pakistan: Eco-friendly Portable Toilets",
+>>>>>>> 9de3ecf (feat/finalize (#18))
 	"description": "Made from environment-friendly and locally-sourced materials such as bamboo sticks, designed to ensure privacy with a locking system and can serve at least 5 families.",
 	"image": "ipfs://bafybeidi4atq53glwfpg5wgdhffqoxrqg4gtlb2xauxqkxltuqd5w2rtfm/3.mp4"
 }

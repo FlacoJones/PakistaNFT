@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
 	"name": "Hygiene Kits",
+=======
+	"name": "Save Pakistan: Hygiene Kits",
+>>>>>>> 9de3ecf (feat/finalize (#18))
 	"description": "Hygiene kits contain bathing & laundry soaps, menstrual hygiene management kits (including reusable cloth paths being produced by marginalized/rural female entrepreneurs, mosquito repellent lotions and serve 7-8 people for 1 month.",
 	"image": "ipfs://bafybeifc2vnlwxtjrjqctek44vg5xzzkxjirepqnvefc4gncg3eeji2q2q/2.mp4"
 }
