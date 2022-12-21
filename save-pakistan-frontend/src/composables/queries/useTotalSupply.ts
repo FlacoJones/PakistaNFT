@@ -11,7 +11,7 @@ export const useTotalSupplyForVariant = ({ variant }: IUseTotalSupplyForVariant)
   const query = useQuery(
     ['total-supply-for-variant-query', variant],
     async () => {
-      if (!variant.value) {
+      if (variant.value === undefined) {
         return 0
       }
       const totalSupply = await SavePakistanUtil.GetTotalSupplyForVariant(variant.value)
