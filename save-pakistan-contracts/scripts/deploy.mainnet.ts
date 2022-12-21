@@ -1,9 +1,10 @@
+import { constants } from "ethers";
 import { getAddress as checksumAddr } from "ethers/lib/utils";
 import { ethers, upgrades } from "hardhat";
 import { SavePakistan } from "../typechain-types";
 
 async function main() {
-  const _treasuryAddr = checksumAddr("0x"); // TODO: Pending multi sig address
+  const _treasuryAddr = checksumAddr(constants.AddressZero); // TODO: Pending multi sig address
   const _usdcAddr = checksumAddr("0x7f5c764cbc14f9669b88837ca1490cca17c31607");
   const _usdtAddr = checksumAddr("0x94b008aa00579c1307b0ef2c499ad98a8ce58e58");
   const _optimismTokenAddr = checksumAddr("0x4200000000000000000000000000000000000042");
