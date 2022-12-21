@@ -1,4 +1,3 @@
-import { constants } from "ethers";
 import { getAddress as checksumAddr } from "ethers/lib/utils";
 import { ethers, upgrades } from "hardhat";
 import { SavePakistan } from "../typechain-types";
