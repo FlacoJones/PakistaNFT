@@ -22,6 +22,7 @@ export const useBalanceOf = ({ account, variant }: IUseBalanceOf) => {
       onSuccess: (data) =>
         console.log(`useBalanceOf
  | onSuccess | ${data}`),
+      retry: false,
     }
   )
 

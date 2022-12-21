@@ -24,6 +24,7 @@ export const useMintRate = ({ variant, token }: IUseMintRate) => {
       onSuccess: (data) =>
         console.log(`useMintRate
  | onSuccess | ${data}`),
+      retry: false,
     }
   )
 

@@ -31,6 +31,7 @@ export const useAllowance = ({ token, owner, spender, refetchInterval }: IUseAll
         console.log(`useAllowance
  | onSuccess | ${data}`),
       refetchInterval,
+      retry: false,
     }
   )
 
