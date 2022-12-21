@@ -1,16 +1,20 @@
 import { useQuery } from 'vue-query'
 import { SPVariant } from '@/types'
 import { SavePakistanUtil } from '@/utils'
+import { Ref } from 'vue'
 
 interface IUseTotalSupplyForVariant {
-  variant: SPVariant
+  variant: Ref<SPVariant | undefined>
 }
 
 export const useTotalSupplyForVariant = ({ variant }: IUseTotalSupplyForVariant) => {
   const query = useQuery(
     ['total-supply-for-variant-query', variant],
     async () => {
-      const totalSupply = await SavePakistanUtil.GetTotalSupplyForVariant(variant)
+      if (!variant.value) {
+        return 0
+      }
+      const totalSupply = await SavePakistanUtil.GetTotalSupplyForVariant(variant.value)
       return totalSupply
     },
     {
@@ -18,6 +22,7 @@ export const useTotalSupplyForVariant = ({ variant }: IUseTotalSupplyForVariant)
       onSuccess: (data) =>
         console.log(`useTotalSupplyForVariant
  | onSuccess | ${data}`),
+      retry: false,
     }
   )
 
@@ -36,6 +41,7 @@ export const useTotalSupplyForAllVariants = () => {
       onSuccess: (data) =>
         console.log(`useTotalSupplyForAllVariants
  | onSuccess | ${data}`),
+      retry: false,
     }
   )
 
