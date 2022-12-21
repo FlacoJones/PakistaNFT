@@ -15,9 +15,10 @@ export interface SPVariantInfo {
   title: string
   desc: string
   price: number
+  maxSupply: number
   subdesc?: string | undefined
   variant: SPVariant
-  imgSrc?: string | undefined
+  imageURI?: string | undefined
 }
 
 export interface Token {

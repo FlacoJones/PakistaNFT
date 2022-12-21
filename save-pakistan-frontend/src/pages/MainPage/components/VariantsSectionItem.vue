@@ -19,7 +19,7 @@ const { setSelectedVariant } = useStore()
     @click="setSelectedVariant(info.variant)"
   >
     <div class="flex gap-3 xl:gap-4">
-      <img :src="info.imgSrc" class="h-16 xl:h-20" />
+      <img :src="info.imageURI" class="h-16 xl:h-20" />
       <span class="text-lg xl:text-xl font-bold leading-5 xl:leading-6">{{ info.title }}</span>
     </div>
     <div class="text-sm xl:text-md leading-4 xl:leading-5">{{ info.desc }}</div>
