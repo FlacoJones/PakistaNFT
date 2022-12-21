@@ -13,7 +13,7 @@ export const useMintRate = ({ variant, token }: IUseMintRate) => {
   const query = useQuery(
     ['mint-rate-query', variant, token],
     async () => {
-      if (!variant.value) {
+      if (variant.value === undefined) {
         return BigNumber.from(0)
       }
       const mintRate = await SavePakistanUtil.GetVariantMintRate(variant.value, token.value)
