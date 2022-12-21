@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import HeroSection from './components/HeroSection.vue'
 import VariantsSection from './components/VariantsSection.vue'
-import DonateSection from './components/DonateSection.vue'
+import MintSection from './components/MintSection.vue'
 </script>
 
 <template>
@@ -10,6 +10,6 @@ import DonateSection from './components/DonateSection.vue'
   >
     <HeroSection />
     <VariantsSection />
-    <DonateSection />
+    <MintSection />
   </div>
 </template>

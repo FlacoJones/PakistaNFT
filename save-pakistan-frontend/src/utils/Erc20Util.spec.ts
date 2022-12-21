@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { OP, TESTNET_CHAIN } from '@/constants'
+import { OP, MAINNET_CHAIN } from '@/constants'
 import { Erc20Util } from '@/utils'
 import { providers, Wallet } from 'ethers'
 
 describe('Erc20Util', () => {
-  const opTokenAddress = OP[TESTNET_CHAIN.id].address!
-  const provider = new providers.InfuraProvider(
-    { chainId: TESTNET_CHAIN.id, name: TESTNET_CHAIN.name },
-    import.meta.env.VITE_INFURA_ID
+  const opTokenAddress = OP[MAINNET_CHAIN.id].address!
+  const provider = new providers.AlchemyProvider(
+    { chainId: MAINNET_CHAIN.id, name: MAINNET_CHAIN.name },
+    import.meta.env.VITE_ALCHEMY_ID
   )
   const signer = new Wallet(import.meta.env.VITE_PRIVATE_KEY, provider)
   const MaxSchnaider = '0xb1D7daD6baEF98df97bD2d3Fb7540c08886e0299'

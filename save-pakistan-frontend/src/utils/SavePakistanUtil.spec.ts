@@ -1,31 +1,31 @@
 import { describe, it, expect } from 'vitest'
-import { OP, SAVE_PAKISTAN_CONTRACT_ADDRESS, TESTNET_CHAIN } from '@/constants'
+import { OP, SAVE_PAKISTAN_CONTRACT_ADDRESS, MAINNET_CHAIN, SP_VARIANT_INFO } from '@/constants'
 import { providers, Wallet } from 'ethers'
 import { SavePakistanUtil } from './SavePakistanUtil'
 import { SPVariant } from '@/types'
 import { Erc20Util } from './Erc20Util'
 
 describe('SavePakistanUtil', () => {
-  const provider = new providers.InfuraProvider(
-    { chainId: TESTNET_CHAIN.id, name: TESTNET_CHAIN.name },
-    import.meta.env.VITE_INFURA_ID
+  const provider = new providers.AlchemyProvider(
+    { chainId: MAINNET_CHAIN.id, name: MAINNET_CHAIN.name },
+    import.meta.env.VITE_ALCHEMY_ID
   )
   const signer = new Wallet(import.meta.env.VITE_PRIVATE_KEY, provider)
   const MaxSchnaider = '0xb1D7daD6baEF98df97bD2d3Fb7540c08886e0299'
-  const opToken = OP[TESTNET_CHAIN.id]!
+  const opToken = OP[MAINNET_CHAIN.id]!
 
   const fetchRationBagBalance = () =>
     SavePakistanUtil.GetBalanceOf(
       MaxSchnaider,
       SPVariant.RationBag,
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id],
       provider
     )
 
   const fetchRationBagTotalSupply = () =>
     SavePakistanUtil.GetTotalSupplyForVariant(
       SPVariant.RationBag,
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id],
       provider
     )
 
@@ -33,16 +33,16 @@ describe('SavePakistanUtil', () => {
     SavePakistanUtil.GetVariantMintRate(
       SPVariant.RationBag,
       opToken,
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id],
       provider
     )
 
   it('should return correct SP contract instance', async () => {
     const savePakistanContract = SavePakistanUtil.GetContract(
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id],
       provider
     )
-    expect(savePakistanContract.address).toBe(SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id])
+    expect(savePakistanContract.address).toBe(SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id])
     expect(await savePakistanContract.symbol()).toBe('SP')
   })
 
@@ -54,7 +54,7 @@ describe('SavePakistanUtil', () => {
 
   it('should return total supply for all variants', async () => {
     const variantToTotalSupply = await SavePakistanUtil.GetTotalSupplyForAllVariants(
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id],
       provider
     )
     expect(Object.keys(variantToTotalSupply).length).toBe(Object.keys(SPVariant).length / 2)
@@ -70,10 +70,10 @@ describe('SavePakistanUtil', () => {
 
   it('should return variant mint rate for token', async () => {
     const rate = await fetachRationBagMintRate()
-    expect(rate).toBe(30)
+    expect(rate).toBe(SP_VARIANT_INFO[SPVariant.RationBag])
   })
 
-  it('should mint variant quantity with eth', async () => {
+  it.skip('should mint variant quantity with eth', async () => {
     const quantity = 3
 
     const initialBalance = await fetchRationBagBalance()
@@ -83,7 +83,7 @@ describe('SavePakistanUtil', () => {
       SPVariant.RationBag,
       quantity,
       signer,
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id]
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id]
     )
 
     const receipt = await mintTx.wait()
@@ -109,7 +109,7 @@ describe('SavePakistanUtil', () => {
       opToken,
       quantity,
       signer,
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id]
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id]
     )
 
     const receipt = await mintTx.wait()
@@ -122,7 +122,7 @@ describe('SavePakistanUtil', () => {
     expect(newTotalSupply).toBe(initialTotalSupply)
   }, 30000)
 
-  it('should mint variant quantity with token', async () => {
+  it.skip('should mint variant quantity with token', async () => {
     const quantity = 2
 
     const initialBalance = await fetchRationBagBalance()
@@ -132,7 +132,7 @@ describe('SavePakistanUtil', () => {
     const amount = rate.mul(quantity)
 
     const approveTx = await Erc20Util.Approve(
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id],
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id],
       amount,
       opToken.address!,
       signer
@@ -144,7 +144,7 @@ describe('SavePakistanUtil', () => {
       opToken,
       quantity,
       signer,
-      SAVE_PAKISTAN_CONTRACT_ADDRESS[TESTNET_CHAIN.id]
+      SAVE_PAKISTAN_CONTRACT_ADDRESS[MAINNET_CHAIN.id]
     )
 
     const receipt = await mintTx.wait()
