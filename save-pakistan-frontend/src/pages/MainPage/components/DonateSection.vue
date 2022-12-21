@@ -75,12 +75,11 @@ const selectToken = (token: Token) => {
 /**
  * balance
  */
-const { data: balance } = useBalance({
+const { data: balance, refetch: refetchBalance } = useBalance({
   addressOrName: address,
   token: computed(() => selectedToken.value.address),
   chainId: computed(() => (isCorrectChain.value ? chain?.value?.id : DEFAULT_CHAIN.id)),
   formatUnits: computed(() => selectedToken.value.decimals),
-  watch: true,
 })
 
 const isExceedsBalance = ref(false)
@@ -213,13 +212,23 @@ const resetMintTx = () => {
 
 const isLoadingMint = computed(() => isLoadingMintWithEth.value || isLoadingMintWithToken.value)
 
-const isTxSubmittedModalOpen = computed(() => mintTx.value !== undefined)
-const onTxSubmittedModalClose = () => {
+/**
+ * refetch
+ */
+const resetState = () => {
+  quantity.value = 1
   resetMintTx()
+  refetchBalance()
   refetchAllowance()
   refetchTotalSupply()
-  quantity.value = 1
-  // store.setSelectedVariant(undefined)
+}
+
+/**
+ * submitted
+ */
+const isTxSubmittedModalOpen = computed(() => mintTx.value !== undefined)
+const onTxSubmittedModalClose = () => {
+  resetState()
 }
 </script>
 
@@ -340,7 +349,13 @@ const onTxSubmittedModalClose = () => {
           <!-- Mint button -->
           <button
             class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="!isConnected || !isCorrectChain || isExceedsAllowance || isLoadingMint"
+            :disabled="
+              !isConnected ||
+              !isCorrectChain ||
+              isExceedsBalance ||
+              isExceedsAllowance ||
+              isLoadingMint
+            "
             @click="mint"
           >
             {{ isLoadingMint ? 'Minting...' : `Donate $${amountUsd}` }}
