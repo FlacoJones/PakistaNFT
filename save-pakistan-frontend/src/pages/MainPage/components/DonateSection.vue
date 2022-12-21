@@ -7,14 +7,7 @@ import {
   TOKENS,
   SAVE_PAKISTAN_CONTRACT_ADDRESS,
 } from '@/constants'
-import {
-  useAccount,
-  useBalance,
-  useConnect,
-  useNetwork,
-  useSwitchNetwork,
-  useWaitForTransaction,
-} from 'vagmi'
+import { useAccount, useBalance, useNetwork, useSwitchNetwork } from 'vagmi'
 import { useStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import {
@@ -23,6 +16,7 @@ import {
   useMintRate,
   useMintWithEth,
   useMintWithToken,
+  useTotalSupplyForVariant,
 } from '@/composables'
 import { Token } from '@/types'
 
@@ -40,9 +34,6 @@ const variantInfo = computed(() => SP_VARIANT_INFO[selectedVariant.value ?? 0])
 /**
  *  connect wallet
  */
-const { connect, connectors } = useConnect()
-const [metamask] = connectors.value
-
 const isConnectWalletModalOpen = ref(false)
 const showConnectButtonModal = () => {
   isConnectWalletModalOpen.value = true
@@ -58,10 +49,8 @@ const { chain } = useNetwork()
 const isCorrectChain = computed(() => chain?.value?.id === DEFAULT_CHAIN.id)
 
 const { switchNetworkAsync } = useSwitchNetwork()
-
-const switchNetwork = async () => {
-  await switchNetworkAsync.value?.(DEFAULT_CHAIN.id)
-  connect.value(metamask) // disconnect issue fix
+const switchNetwork = () => {
+  switchNetworkAsync.value?.(DEFAULT_CHAIN.id)
 }
 
 /**
@@ -104,6 +93,13 @@ const quantity = ref(1)
 watch([selectedVariant], () => {
   quantity.value = 1
   isTokenListShown.value = false
+})
+
+/**
+ * supply
+ */
+const { data: totalSupply, refetch: refetchTotalSupply } = useTotalSupplyForVariant({
+  variant: computed(() => selectedVariant.value),
 })
 
 /**
@@ -157,14 +153,9 @@ watch([allowance, tokenAmount, isEth], () => {
 const {
   mutate: mutateApprove,
   data: approveTx,
-  isLoading: isSigningApprove,
+  isLoading: isLoadingApprove,
   reset: resetApproveTx,
-} = useApprove()
-
-const { isLoading: isLoadingApprove } = useWaitForTransaction({
-  hash: approveTx.value?.hash,
-  wait: approveTx.value?.wait,
-  confirmations: 4,
+} = useApprove({
   onSuccess: () => {
     refetchAllowance()
     resetApproveTx()
@@ -178,24 +169,20 @@ const approve = () =>
     token: selectedToken.value,
   })
 
-const isApproving = computed(
-  () => isSigningApprove.value || (isLoadingApprove.value && !!approveTx.value)
-)
-
 /**
  * mint
  */
 const {
   mutate: mintWithEth,
   data: mintWithEthTx,
-  isLoading: isSigningMintWithEth,
+  isLoading: isLoadingMintWithEth,
   reset: resetMintWithEthTx,
 } = useMintWithEth()
 
 const {
   mutate: mintWithToken,
   data: mintWithTokenTx,
-  isLoading: isSigningMintWithToken,
+  isLoading: isLoadingMintWithToken,
   reset: resetMintWithTokenTx,
 } = useMintWithToken()
 
@@ -217,37 +204,22 @@ const mint = () => {
   }
 }
 
-const mintTx = computed(() => mintWithEthTx.value || mintWithTokenTx.value)
+const mintTx = computed(() => mintWithEthTx.value ?? mintWithTokenTx.value)
 
 const resetMintTx = () => {
   resetMintWithEthTx()
   resetMintWithTokenTx()
 }
 
-const { isLoading: isLoadingMint } = useWaitForTransaction({
-  hash: mintTx.value?.hash,
-  wait: mintTx.value?.wait,
-  confirmations: 3,
-  onSuccess: (receipt) => {
-    console.log(receipt)
-    refetchAllowance()
-    store.setSelectedVariant(undefined)
-  },
-  onError: (error) => {
-    console.error(error)
-  },
-})
+const isLoadingMint = computed(() => isLoadingMintWithEth.value || isLoadingMintWithToken.value)
 
-const isMinting = computed(
-  () =>
-    isSigningMintWithEth.value ||
-    isSigningMintWithToken.value ||
-    (isLoadingMint.value && !!mintTx.value)
-)
-
-const isTxSubmittedModalOpen = computed(() => !!mintTx.value)
+const isTxSubmittedModalOpen = computed(() => mintTx.value !== undefined)
 const onTxSubmittedModalClose = () => {
   resetMintTx()
+  refetchAllowance()
+  refetchTotalSupply()
+  quantity.value = 1
+  // store.setSelectedVariant(undefined)
 }
 </script>
 
@@ -259,10 +231,12 @@ const onTxSubmittedModalClose = () => {
       <!-- Variant info -->
       <div class="flex flex-col gap-6 lg:w-4/5">
         <div class="flex gap-5 lg:gap-6">
-          <img :src="variantInfo.imgSrc" class="h-24 lg:h-28" />
-          <span class="text-2xl lg:text-3xl font-bold leading-7 lg:leading-8">{{
-            variantInfo.title
-          }}</span>
+          <img :src="variantInfo.imageURI" class="h-24 lg:h-28" />
+          <span class="text-2xl lg:text-3xl font-bold leading-7 lg:leading-8">
+            {{ variantInfo.title }}
+            <br />
+            {{ totalSupply !== undefined ? `${totalSupply}/${variantInfo.maxSupply}` : '' }}</span
+          >
         </div>
         <div class="text-lg xl:text-xl leading-6">{{ variantInfo.desc }}</div>
         <div class="flex gap-2 items-center">
@@ -356,20 +330,20 @@ const onTxSubmittedModalClose = () => {
             <button
               v-if="isExceedsAllowance"
               class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="isApproving"
+              :disabled="isLoadingApprove"
               @click="approve"
             >
-              {{ isApproving ? 'Approving...' : `Approve ${selectedToken.symbol}` }}
+              {{ isLoadingApprove ? 'Approving...' : `Approve ${selectedToken.symbol}` }}
             </button>
           </div>
 
           <!-- Mint button -->
           <button
             class="font-bold text-3xl bg-white p-4 rounded-lg w-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="!isConnected || !isCorrectChain || isExceedsAllowance || isMinting"
+            :disabled="!isConnected || !isCorrectChain || isExceedsAllowance || isLoadingMint"
             @click="mint"
           >
-            {{ isMinting ? 'Minting...' : `Donate $${amountUsd}` }}
+            {{ isLoadingMint ? 'Minting...' : `Donate $${amountUsd}` }}
           </button>
         </div>
       </div>
