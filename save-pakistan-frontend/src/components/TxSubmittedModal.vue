@@ -18,9 +18,9 @@ const tweetText = `I just minted a @Savepakistanorg Relief NFT 🙏
 
 Together, we can support people in Pakistan in a way that has never been possible before this Christmas on @optimismFND 🎅
 
-OpenSea: ${openseaUrl.replace('https://', '')}
 Read more: link.medium.com/xmnK1ejCWvb
-Mint Now: ${window.location.hostname.replace('https://', '')}`
+Mint Now: mint.savepakistan.org
+OpenSea: ${openseaUrl.replace('https://', '')}`
 const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURI(tweetText)}`
 </script>
 
