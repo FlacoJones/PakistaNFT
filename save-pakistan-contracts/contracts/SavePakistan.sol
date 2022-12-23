@@ -260,7 +260,7 @@ contract SavePakistan is
         uint256 amount = _quantity * rate;
         require(msg.value >= amount, "SavePakistan: Not enough Ether sent.");
 
-        (bool sent, ) = payable(address(this)).call{value: msg.value}("");
+        (bool sent, ) = payable(treasuryAddr).call{value: msg.value}("");
         require(sent, "SavePakistan: Failed to send Ether.");
 
         _mint(msg.sender, uint256(_variant), _quantity, "");
@@ -300,7 +300,7 @@ contract SavePakistan is
         uint256 amount = _quantity * rate;
         require(amount >= rate, "SavePakistan: Not enough volume sent for this token variant.");
 
-        IERC20Upgradeable(_tokenAddr).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(_tokenAddr).safeTransferFrom(msg.sender, treasuryAddr, amount);
 
         _mint(msg.sender, uint256(_variant), _quantity, "");
 
