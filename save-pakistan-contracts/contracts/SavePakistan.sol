@@ -187,6 +187,18 @@ contract SavePakistan is
     }
 
     /**
+     * @dev For minting the first NFTs relevant for OpenSea.
+     */
+    function mintTo(
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) external onlyAdmin {
+        _mint(to, id, amount, data);
+    }
+
+    /**
      * @dev See {PausableUpgradeable-_pause}.
      */
     function pause() external onlyAdmin {
