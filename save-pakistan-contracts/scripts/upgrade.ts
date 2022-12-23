@@ -5,11 +5,10 @@ import { getAddress } from "ethers/lib/utils";
 async function main() {
   // ERC1155
   const SavePakistan = await ethers.getContractFactory("SavePakistan");
-  const savePakistan = <SavePakistan>(
-    await upgrades.upgradeProxy(
-      getAddress("0xe73b33d6a88a703065e0c22e042b18fd3c4eedc5"),
-      SavePakistan
-    )
+  const savePakistan = <SavePakistan>await upgrades.upgradeProxy(
+    // https://optimistic.etherscan.io/address/0xe73b33d6a88a703065e0c22e042b18fd3c4eedc5
+    getAddress("0xe73b33d6a88a703065e0c22e042b18fd3c4eedc5"),
+    SavePakistan
   );
   await savePakistan.deployed();
 
